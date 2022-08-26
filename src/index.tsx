@@ -8,6 +8,7 @@ import { store } from './app';
 import GlobalStyles from './components/GlobalStyles';
 import { ThemeProvider } from '@mui/material';
 import theme from './theme/theme';
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
