@@ -22,12 +22,12 @@ export const listUsers: User[] = [
 export const fetchLogin = (payload: User) => {
   return new Promise<{ data: User }>((resolve, rejected) => {
     setTimeout(() => {
-      const res = listUsers.filter((user) => {
+      const res = listUsers.find((user) => {
         return (
           user.email === payload.email && user.password === payload.password
         );
       });
-      res.length === 1 && resolve({ data: res[0] });
+      res && resolve({ data: res });
       rejected();
     }, 500);
   });
