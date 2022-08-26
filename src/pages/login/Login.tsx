@@ -41,7 +41,6 @@ const Login: React.FC = () => {
   const onSubmit: SubmitHandler<FormData> = (data) => {
     dispatch(loginAsync(data));
   };
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>

@@ -4,6 +4,7 @@ export interface User {
   password?: string;
   token?: string;
 }
+export type InfoUser = Partial<User>;
 export const listUsers: User[] = [
   {
     id: 'sadjsabass',
@@ -30,4 +31,12 @@ export const fetchLogin = (payload: User) => {
       rejected();
     }, 500);
   });
+};
+
+export const fetchUser = (token: string) => {
+  const res = listUsers.filter((user) => {
+    return user.token === token;
+  });
+  const { password, ...others } = res[0];
+  return others;
 };

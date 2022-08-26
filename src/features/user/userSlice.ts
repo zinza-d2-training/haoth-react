@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
 import { fetchLogin, User } from './userAPI';
+import { saveLocalStorage } from '../../utils/localStorage';
 export interface UserState {
   info?: User;
   token?: string;
@@ -13,7 +14,6 @@ const initialState: UserState = {
   isFetching: false,
   error: false
 };
-
 export const loginAsync = createAsyncThunk(
   'user/fetchLogin',
   async (payload: User) => {
@@ -33,6 +33,7 @@ export const UserSlice = createSlice({
         state.error = false;
       })
       .addCase(loginAsync.fulfilled, (state, action) => {
+        saveLocalStorage('token', action.payload.token);
         state.error = false;
         state.token = action.payload.token;
         state.info = action.payload;
