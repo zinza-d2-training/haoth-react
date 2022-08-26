@@ -13,13 +13,13 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <Provider store={store}>
-        <GlobalStyles>
+    <Provider store={store}>
+      <GlobalStyles>
+        <ThemeProvider theme={theme}>
           <App />
-        </GlobalStyles>
-      </Provider>
-    </ThemeProvider>
+        </ThemeProvider>
+      </GlobalStyles>
+    </Provider>
   </React.StrictMode>
 );
 
