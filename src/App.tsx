@@ -1,24 +1,40 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import Counter from './features/counter/Counter';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate
+} from 'react-router-dom';
+import Login from './pages/login';
+import ForgotPassword from './pages/forgot-password';
+import User from './pages/user';
+import Register from './pages/register';
+import { useAccessToken } from './hooks/useAccessToken';
 function App() {
+  const token = useAccessToken();
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer">
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={token !== '' ? <User /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/login"
+            element={token === '' ? <Login /> : <Navigate to={'/'} />}
+          />
+          <Route
+            path="/forgot-password"
+            element={token === '' ? <ForgotPassword /> : <Navigate to={'/'} />}
+          />
+          <Route
+            path="/register"
+            element={token === '' ? <Register /> : <Navigate to={'/'} />}
+          />
+        </Routes>
+      </Router>
     </div>
   );
 }
