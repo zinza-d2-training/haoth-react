@@ -15,7 +15,7 @@ import Register from './pages/register';
 import { useAccessToken } from './hooks/useAccessToken';
 function App() {
   const tokenUser = useAppSelector(selectToken);
-  const token = useAccessToken(tokenUser);
+  const token = useAccessToken(tokenUser as string);
   return (
     <div className="App">
       <Router>

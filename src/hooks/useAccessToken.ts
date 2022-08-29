@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-export function useAccessToken(value: any) {
+export function useAccessToken(value: string) {
   const [token, setToken] = useLocalStorage('token', '');
   useEffect(() => {
     if (value !== '') {
