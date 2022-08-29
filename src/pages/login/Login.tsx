@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ErrorMessage } from '@hookform/error-message';
 import * as yup from 'yup';
 import styled from '@emotion/styled';
 import { LoadingButton } from '@mui/lab';
@@ -101,7 +100,10 @@ const Typo = styled.div`
   justify-content: center;
   color: rgba(0, 0, 0, 0.87);
 `;
-const Login: React.FC = () => {
+const To = styled(Link)`
+  text-decoration: none;
+`;
+const Login = () => {
   const errorLogin = useAppSelector(selectError);
   const isFetching = useAppSelector(selectIsFetching);
   const dispatch = useAppDispatch();
@@ -116,9 +118,6 @@ const Login: React.FC = () => {
   const onSubmit: SubmitHandler<FormData> = (data) => {
     dispatch(loginAsync(data));
   };
-  useEffect(() => {
-    console.log(isValid);
-  });
   return (
     <Wrapper>
       <Container>
@@ -146,19 +145,14 @@ const Login: React.FC = () => {
                 <Label htmlFor="email">Email</Label>
                 <TextField
                   {...register('email')}
-                  name="email"
                   id="email"
                   type="text"
                   placeholder="12345689"
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
                   sx={{
                     width: '100%'
                   }}
-                />
-                <ErrorMessage
-                  style={{ color: 'red', padding: '5px 0' }}
-                  errors={errors}
-                  name="email"
-                  as="p"
                 />
               </ComponentInput>
               <ComponentInput>
@@ -167,25 +161,20 @@ const Login: React.FC = () => {
                 </Label>
                 <TextField
                   {...register('password')}
-                  name="password"
                   type="password"
                   placeholder="*********"
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
                   sx={{ width: '100%' }}
-                />
-                <ErrorMessage
-                  style={{ color: 'red', padding: '5px 0' }}
-                  errors={errors}
-                  name="password"
-                  as="p"
                 />
               </ComponentInput>
             </FormControl>
             <ForgotPassword>
-              <Link style={{ textDecoration: 'none' }} to="/forgot-password">
+              <To to="/forgot-password">
                 <Typography sx={{ color: '#3949AB' }} component="span">
                   Quên mật khẩu?
                 </Typography>
-              </Link>
+              </To>
             </ForgotPassword>
             {errorLogin && (
               <Typography sx={{ color: 'red', padding: '5px 0' }}>
@@ -204,18 +193,20 @@ const Login: React.FC = () => {
             <Typo>
               <Typography>Hoặc đăng kí tài khoản nếu chưa đăng kí</Typography>
             </Typo>
-            <Button
-              variant="outlined"
-              color="success"
-              sx={{
-                border: '1px solid #9CCC65',
-                width: '376px',
-                height: '50px'
-              }}>
-              <Typography sx={{ color: '#9CCC65', fontWeight: '700' }}>
-                Đăng ký
-              </Typography>
-            </Button>
+            <To to={'/register'}>
+              <Button
+                variant="outlined"
+                color="success"
+                sx={{
+                  border: '1px solid #9CCC65',
+                  width: '376px',
+                  height: '50px'
+                }}>
+                <Typography sx={{ color: '#9CCC65', fontWeight: '700' }}>
+                  Đăng ký
+                </Typography>
+              </Button>
+            </To>
           </Form>
         </SideRight>
       </Container>

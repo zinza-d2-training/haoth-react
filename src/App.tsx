@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './App.css';
 import {
   BrowserRouter as Router,
@@ -7,19 +7,15 @@ import {
   Navigate
 } from 'react-router-dom';
 import Login from './pages/login';
+import ForgotPassword from './pages/forgot-password';
 import User from './pages/user';
-import { useLocalStorage } from './hooks';
 import { useAppSelector } from './app';
 import { selectToken } from './features/user/userSlice';
-
+import Register from './pages/register';
+import { useAccessToken } from './hooks/useAccessToken';
 function App() {
-  const [token, setToken] = useLocalStorage('token', '');
   const tokenUser = useAppSelector(selectToken);
-  useEffect(() => {
-    if (tokenUser !== '') {
-      setToken(tokenUser);
-    }
-  }, [tokenUser, setToken]);
+  const token = useAccessToken(tokenUser);
   return (
     <div className="App">
       <Router>
@@ -31,6 +27,14 @@ function App() {
           <Route
             path="/login"
             element={tokenUser === '' ? <Login /> : <Navigate to={'/'} />}
+          />
+          <Route
+            path="/forgot-password"
+            element={token === '' ? <ForgotPassword /> : <Navigate to={'/'} />}
+          />
+          <Route
+            path="/register"
+            element={token === '' ? <Register /> : <Navigate to={'/'} />}
           />
         </Routes>
       </Router>
