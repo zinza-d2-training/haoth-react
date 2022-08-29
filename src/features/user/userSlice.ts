@@ -33,7 +33,6 @@ export const UserSlice = createSlice({
         state.error = false;
       })
       .addCase(loginAsync.fulfilled, (state, action) => {
-        console.log(action.payload);
         saveLocalStorage('token', action.payload.token);
         saveLocalStorage('user', action.payload.user);
         state.error = false;
