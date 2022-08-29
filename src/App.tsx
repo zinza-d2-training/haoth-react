@@ -9,13 +9,10 @@ import {
 import Login from './pages/login';
 import ForgotPassword from './pages/forgot-password';
 import User from './pages/user';
-import { useAppSelector } from './app';
-import { selectToken } from './features/user/userSlice';
 import Register from './pages/register';
 import { useAccessToken } from './hooks/useAccessToken';
 function App() {
-  const tokenUser = useAppSelector(selectToken);
-  const token = useAccessToken(tokenUser as string);
+  const token = useAccessToken();
   return (
     <div className="App">
       <Router>
@@ -26,7 +23,7 @@ function App() {
           />
           <Route
             path="/login"
-            element={tokenUser === '' ? <Login /> : <Navigate to={'/'} />}
+            element={token === '' ? <Login /> : <Navigate to={'/'} />}
           />
           <Route
             path="/forgot-password"

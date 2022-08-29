@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
+import { useAppSelector } from '../app';
+import { selectToken } from '../features/user/userSlice';
 import { useLocalStorage } from './useLocalStorage';
-export function useAccessToken(value: string) {
+export function useAccessToken() {
+  const tokenUser = useAppSelector(selectToken);
   const [token, setToken] = useLocalStorage('token', '');
   useEffect(() => {
-    if (value !== '') {
-      setToken(value);
+    if (tokenUser !== '') {
+      setToken(tokenUser);
     }
-  }, [value, setToken]);
+  }, [tokenUser, setToken]);
   return token;
 }

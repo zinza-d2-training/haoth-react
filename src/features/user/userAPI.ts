@@ -1,9 +1,13 @@
 export interface User {
-  id?: string;
-  email?: string;
-  password?: string;
+  id: string;
+  email: string;
+  password: string;
 }
 export type InfoUser = Partial<User>;
+export interface UserResponse {
+  user: InfoUser;
+  token: string;
+}
 export const listUsers: User[] = [
   {
     id: 'sadjsabass',
@@ -16,8 +20,8 @@ export const listUsers: User[] = [
     password: '123456789'
   }
 ];
-export const fetchLogin = (payload: User) => {
-  return new Promise<{ data: any }>((resolve, rejected) => {
+export const fetchLogin = (payload: InfoUser) => {
+  return new Promise<{ data: UserResponse }>((resolve, rejected) => {
     setTimeout(() => {
       const res = listUsers.find((user) => {
         return (
