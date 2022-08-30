@@ -24,15 +24,16 @@ const schema = yup
   .required();
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
   display: block;
   position: relative;
   background-color: #ffffff;
   padding: 0;
 `;
 const Container = styled.div`
-  width: 1400px;
-  height: 1000px;
+  width: 100%;
+  height: 100%;
   padding: 0;
   display: flex;
 `;
@@ -88,7 +89,7 @@ const To = styled(Link)`
   text-decoration: none;
 `;
 
-const ForgotPassword: React.FC = () => {
+const ForgotPassword = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const stateForgot = useAppSelector(selectState);
@@ -120,7 +121,8 @@ const ForgotPassword: React.FC = () => {
                   padding: '0px 40px',
                   textAlign: 'center',
                   fontSize: '16px',
-                  color: 'rgba(0, 0, 0, 0.87)'
+                  color: 'rgba(0, 0, 0, 0.87)',
+                  marginBottom:'8px'
                 }}>
                 Để khôi phục mật khẩu, vui lòng nhập đúng email bạn đã dùng để
                 đăng kí <span style={{ color: '#E53935' }}>(*)</span>
@@ -134,15 +136,16 @@ const ForgotPassword: React.FC = () => {
               }}>
               <ComponentInput>
                 <TextField
-                  inputProps={{ readOnly: isLoading }}
+                  inputProps={{ readOnly: isLoading,style:{height:'33px'} }}
                   {...register('email')}
                   id="email"
                   type="text"
+                  size='small'
                   placeholder="Email"
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   sx={{
-                    width: '100%'
+                    width: '100%',
                   }}
                 />
               </ComponentInput>

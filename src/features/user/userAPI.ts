@@ -28,9 +28,12 @@ export const fetchLogin = (payload: InfoUser) => {
           user.email === payload.email && user.password === payload.password
         );
       });
-      const { password, ...others }: any = res;
-      res && resolve({ data: { user: others, token: '' + Date.now() } });
-      rejected();
+      if(res){
+        const { password, ...others }: any = res;
+        resolve({ data: { user: others, token: '' + Date.now() } });
+      }else{
+        rejected();
+      }
     }, 500);
   });
 };
