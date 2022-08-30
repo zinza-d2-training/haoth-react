@@ -107,8 +107,6 @@ const To = styled(Link)`
 `;
 const Login = () => {
   const errorLogin = useAppSelector(selectError);
-  console.log(errorLogin);
-
   const isFetching = useAppSelector(selectIsFetching);
   const dispatch = useAppDispatch();
   const {
