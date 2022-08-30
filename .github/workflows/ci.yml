@@ -18,8 +18,8 @@ jobs:
           node-version: '${{ steps.nvm.outputs.NVMRC }}'
           cache: 'yarn'
       - name: Install JS dependencies
-        run: yarn install --frozen-lockfile --prefer-offline
+        run: npm install
       - name: ESLint & Prettier
-        run: yarn eslint && yarn prettier
+        run: npm run eslint && npm run prettier
       - name: Typescript
-        run: yarn tsc --noEmit
+        run: tsc --noEmit
