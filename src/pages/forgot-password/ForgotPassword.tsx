@@ -122,7 +122,7 @@ const ForgotPassword = () => {
                   textAlign: 'center',
                   fontSize: '16px',
                   color: 'rgba(0, 0, 0, 0.87)',
-                  marginBottom:'8px'
+                  marginBottom: '8px'
                 }}>
                 Để khôi phục mật khẩu, vui lòng nhập đúng email bạn đã dùng để
                 đăng kí <span style={{ color: '#E53935' }}>(*)</span>
@@ -136,16 +136,19 @@ const ForgotPassword = () => {
               }}>
               <ComponentInput>
                 <TextField
-                  inputProps={{ readOnly: isLoading,style:{height:'33px'} }}
+                  inputProps={{
+                    readOnly: isLoading,
+                    style: { height: '33px' }
+                  }}
                   {...register('email')}
                   id="email"
                   type="text"
-                  size='small'
+                  size="small"
                   placeholder="Email"
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   sx={{
-                    width: '100%',
+                    width: '100%'
                   }}
                 />
               </ComponentInput>

@@ -148,8 +148,8 @@ const Login = () => {
               <ComponentInput>
                 <Label htmlFor="email">Email</Label>
                 <TextField
-                  size='small'
-                  inputProps={{style:{height:'33px'}}}
+                  size="small"
+                  inputProps={{ style: { height: '33px' } }}
                   {...register('email')}
                   id="email"
                   type="text"
@@ -157,7 +157,7 @@ const Login = () => {
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   sx={{
-                    width: '100%',
+                    width: '100%'
                   }}
                 />
               </ComponentInput>
@@ -166,14 +166,14 @@ const Login = () => {
                   Mật khẩu
                 </Label>
                 <TextField
-                  size='small'
+                  size="small"
                   {...register('password')}
-                  inputProps={{style:{height:'33px'}}}
+                  inputProps={{ style: { height: '33px' } }}
                   type="password"
                   placeholder="*********"
                   error={!!errors.password}
                   helperText={errors.password?.message}
-                  sx={{ width: '100%'}}
+                  sx={{ width: '100%' }}
                 />
               </ComponentInput>
             </FormControl>

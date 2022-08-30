@@ -28,10 +28,10 @@ export const fetchLogin = (payload: InfoUser) => {
           user.email === payload.email && user.password === payload.password
         );
       });
-      if(res){
+      if (res) {
         const { password, ...others }: any = res;
         resolve({ data: { user: others, token: '' + Date.now() } });
-      }else{
+      } else {
         rejected();
       }
     }, 500);
