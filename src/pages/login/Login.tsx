@@ -25,15 +25,16 @@ const schema = yup
   .required();
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
   display: block;
   position: relative;
   background-color: #ffffff;
   padding: 0;
 `;
 const Container = styled.div`
-  width: 1400px;
-  height: 1000px;
+  width: 100%;
+  height: 100%;
   padding: 0;
   display: flex;
 `;
@@ -73,6 +74,7 @@ const Label = styled.label`
   font-weight: 400;
   line-height: 24px;
   color: rgba(0, 0, 0, 0.87);
+  margin-bottom: 8px;
 `;
 const ComponentInput = styled.div`
   width: 100%;
@@ -144,6 +146,8 @@ const Login = () => {
               <ComponentInput>
                 <Label htmlFor="email">Email</Label>
                 <TextField
+                  size="small"
+                  inputProps={{ style: { height: '33px' } }}
                   {...register('email')}
                   id="email"
                   type="text"
@@ -160,7 +164,9 @@ const Login = () => {
                   Mật khẩu
                 </Label>
                 <TextField
+                  size="small"
                   {...register('password')}
+                  inputProps={{ style: { height: '33px' } }}
                   type="password"
                   placeholder="*********"
                   error={!!errors.password}
