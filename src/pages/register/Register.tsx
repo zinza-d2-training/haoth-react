@@ -18,6 +18,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
+import images from '../../assets/images';
+
 const Wrapper = styled.div`
   width: 100vw;
   height: 100vh;
@@ -37,7 +39,7 @@ const SideLeft = styled.div`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  background: url('http://t3.gstatic.com/licensed-image?q=tbn:ANd9GcRX350AtXwfAeOrD-nrzZT3TzGdBVplfiffUbY1MXtZkEvwhW4Wlcn6qF8-wNA59qpT5Gfie1sa0e719GqBW74');
+  background: url(${images.background});
   background-size: cover;
 `;
 const SideRight = styled.div`
@@ -335,7 +337,7 @@ const Register = () => {
                 <Controller
                   control={control}
                   {...register('birthday')}
-                  render={({ field: { ref, onChange, value } }) => (
+                  render={({ field }) => (
                     <Stack
                       sx={{
                         width: '400px',
@@ -350,11 +352,11 @@ const Register = () => {
                           disableFuture
                           openTo="year"
                           views={['year', 'month', 'day']}
-                          value={value || Date()}
-                          onChange={(date) => {
-                            onChange(date ? date : '');
+                          value={field.value || Date()}
+                          onChange={(date: any) => {
+                            field.onChange(date ? date : '');
                           }}
-                          renderInput={(params) => {
+                          renderInput={(params: any) => {
                             return <TextField {...params} />;
                           }}
                         />
@@ -384,7 +386,7 @@ const Register = () => {
                     <Select
                       id="gender"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
-                      defaultValue={province}
+                      defaultValue={'Nam'}
                       {...field}
                       onChange={(event) => {
                         field.onChange(event.target.value);

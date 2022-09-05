@@ -13,6 +13,8 @@ import {
   selectIsFetching
 } from '../../features/user/userSlice';
 
+import images from '../../assets/images';
+
 type FormData = {
   email: string;
   password: string;
@@ -43,7 +45,7 @@ const SideLeft = styled.div`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  background: url('http://t3.gstatic.com/licensed-image?q=tbn:ANd9GcRX350AtXwfAeOrD-nrzZT3TzGdBVplfiffUbY1MXtZkEvwhW4Wlcn6qF8-wNA59qpT5Gfie1sa0e719GqBW74');
+  background: url(${images.background});
   background-size: cover;
 `;
 const SideRight = styled.div`
