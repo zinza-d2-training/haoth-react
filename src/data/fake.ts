@@ -1,6 +1,6 @@
-import { IDistricts, IProvinces, IWards } from '../interfaces';
+import { IDistrict, IProvince, IWard } from '../interfaces';
 
-export const listProvinces: IProvinces = [
+export const listProvinces: IProvince[] = [
   {
     code: 1,
     districts: [],
@@ -26,7 +26,7 @@ export const listProvinces: IProvinces = [
     phone_code: 25
   }
 ];
-export const listDistricts: IDistricts = [
+export const listDistricts: IDistrict[] = [
   {
     code: 1,
     wards: [],
@@ -92,7 +92,7 @@ export const listDistricts: IDistricts = [
     province_code: 3
   }
 ];
-export const listWards: IWards = [
+export const listWards: IWard[] = [
   {
     code: 1,
     name: 'Xã 1',

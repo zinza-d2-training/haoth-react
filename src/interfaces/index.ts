@@ -21,6 +21,3 @@ export interface IProvince {
   division_type: string;
   phone_code: number;
 }
-export type IProvinces = IProvince[];
-export type IDistricts = IDistrict[];
-export type IWards = IWard[];

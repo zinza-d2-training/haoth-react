@@ -19,14 +19,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Background } from '../../assets/images';
 import { listProvinces, listDistricts, listWards } from '../../data/fake';
-import {
-  IDistrict,
-  IDistricts,
-  IProvince,
-  IProvinces,
-  IWard,
-  IWards
-} from '../../interfaces';
+import { IDistrict, IProvince, IWard } from '../../interfaces';
 const Wrapper = styled.div`
   width: 100vw;
   height: 100vh;
@@ -44,7 +37,7 @@ const Container = styled.div`
 `;
 const SideLeft = styled.div`
   width: 50%;
-  height: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -53,13 +46,15 @@ const SideLeft = styled.div`
 `;
 const SideRight = styled.div`
   width: 50%;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: scroll;
 `;
 const Form = styled.form`
-  width: 600px;
   margin: auto;
+  width: 600px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,9 +119,9 @@ const schema = yup
 
 const Register = () => {
   const navigate = useNavigate();
-  const [provinces, setProvinces] = useState<IProvinces>([]);
-  const [districts, setDistricts] = useState<IDistricts>([]);
-  const [wards, setWards] = useState<IWards>([]);
+  const [provinces, setProvinces] = useState<IProvince[]>([]);
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [wards, setWards] = useState<IWard[]>([]);
   const {
     register,
     control,
