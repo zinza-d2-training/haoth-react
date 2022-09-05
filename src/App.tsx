@@ -11,6 +11,8 @@ import ForgotPassword from './pages/forgot-password';
 import User from './pages/user';
 import Register from './pages/register/Register';
 import { useAccessToken } from './hooks/useAccessToken';
+import Homepage from './pages/homepage/Homepage';
+import Layout from './layouts/Layout';
 function App() {
   const token = useAccessToken();
   return (
@@ -32,6 +34,14 @@ function App() {
           <Route
             path="/register"
             element={token === '' ? <Register /> : <Navigate to={'/'} />}
+          />
+          <Route
+            path="/home"
+            element={
+              <Layout>
+                <Homepage />
+              </Layout>
+            }
           />
         </Routes>
       </Router>
