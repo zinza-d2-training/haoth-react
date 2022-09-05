@@ -179,7 +179,6 @@ const Register = () => {
   const onSubmit: SubmitHandler<IFormData> = (data) => {
     data.province = data.province.split('/')[1];
     data.district = data.district.split('/')[1];
-    console.log(data);
     const fetchRegister = async () => {
       await setTimeout(() => {
         alert('Dang ki thanh cong');
