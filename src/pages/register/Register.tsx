@@ -17,9 +17,16 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
-import images from '../../assets/images';
-
+import { Background } from '../../assets/images';
+import { listProvinces, listDistricts, listWards } from '../../data/fake';
+import {
+  IDistrict,
+  IDistricts,
+  IProvince,
+  IProvinces,
+  IWard,
+  IWards
+} from '../../interfaces';
 const Wrapper = styled.div`
   width: 100vw;
   height: 100vh;
@@ -27,6 +34,7 @@ const Wrapper = styled.div`
   position: relative;
   background-color: #ffffff;
   padding: 0;
+  overflow-x: hidden;
 `;
 const Container = styled.div`
   width: 100%;
@@ -36,10 +44,11 @@ const Container = styled.div`
 `;
 const SideLeft = styled.div`
   width: 50%;
+  height: 100%;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  background: url(${images.background});
+  background: url(${Background});
   background-size: cover;
 `;
 const SideRight = styled.div`
@@ -50,10 +59,10 @@ const SideRight = styled.div`
 `;
 const Form = styled.form`
   width: 600px;
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* padding: 100px 24px 0; */
 `;
 const Header = styled.div`
   width: 100%;
@@ -79,7 +88,7 @@ const DialogActions = styled.div`
   justify-content: flex-end;
 `;
 
-interface FormData {
+interface IFormData {
   card: string;
   email: string;
   password: string;
@@ -89,29 +98,6 @@ interface FormData {
   province: string;
   district: string;
   ward: string;
-}
-interface Ward {
-  code: number;
-  name: string;
-  codename: string;
-  division_type: string;
-  district_code: number;
-}
-interface District {
-  code: number;
-  wards?: Ward[];
-  name: string;
-  codename: string;
-  division_type: string;
-  province_code: number;
-}
-interface Province {
-  code: number;
-  districts?: District[];
-  name: string;
-  codename: string;
-  division_type: string;
-  phone_code: number;
 }
 
 const schema = yup
@@ -138,16 +124,17 @@ const schema = yup
 
 const Register = () => {
   const navigate = useNavigate();
-  const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
+  const [provinces, setProvinces] = useState<IProvinces>([]);
+  const [districts, setDistricts] = useState<IDistricts>([]);
+  const [wards, setWards] = useState<IWards>([]);
   const {
     register,
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid }
-  } = useForm<FormData>({
+  } = useForm<IFormData>({
     resolver: yupResolver(schema),
     mode: 'onChange',
     defaultValues: {
@@ -160,45 +147,39 @@ const Register = () => {
   });
   const province = watch('province');
   const district = watch('district');
+  const ward = watch('ward');
   //Get Districts when select province
   useEffect(() => {
-    const fetchData = () => {
-      fetch('https://provinces.open-api.vn/api/', {
-        method: 'GET',
-        mode: 'cors'
-      })
-        .then((response) => response.json())
-        .then((data) => setProvinces(data));
-    };
-    fetchData();
+    setProvinces(listProvinces);
   }, []);
   useEffect(() => {
     if (!!province) {
+      setValue('district', '');
+      setValue('ward', '');
       setDistricts([]);
       setWards([]);
-      const code = province.split('/')[0];
-      fetch(`https://provinces.open-api.vn/api/p/${code}/?depth=2`, {
-        method: 'GET',
-        mode: 'cors'
-      })
-        .then((response) => response.json())
-        .then((data) => setDistricts(data.districts));
+      const code = Number(province.split('/')[0]);
+      const data = listDistricts.filter(
+        (item: IDistrict) => item.province_code === code
+      );
+      setDistricts(data);
     }
-  }, [province]);
+  }, [province, setValue]);
   useEffect(() => {
     if (!!district) {
-      const code = district.split('/')[0];
-      fetch(`https://provinces.open-api.vn/api/d/${code}/?depth=2`, {
-        method: 'GET',
-        mode: 'cors'
-      })
-        .then((response) => response.json())
-        .then((data) => setWards(data.wards));
+      setValue('ward', '');
+      setWards([]);
+      const code = Number(district.split('/')[0]);
+      const data = listWards.filter(
+        (item: IWard) => item.district_code === code
+      );
+      setWards(data);
     }
-  }, [district]);
-  const onSubmit: SubmitHandler<FormData> = (data) => {
+  }, [district, setValue]);
+  const onSubmit: SubmitHandler<IFormData> = (data) => {
     data.province = data.province.split('/')[1];
     data.district = data.district.split('/')[1];
+    console.log(data);
     const fetchRegister = async () => {
       await setTimeout(() => {
         alert('Dang ki thanh cong');
@@ -417,6 +398,7 @@ const Register = () => {
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <Select
+                      error={!!errors.province}
                       size="small"
                       id="province"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
@@ -425,7 +407,7 @@ const Register = () => {
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      {provinces.map((province: Province) => (
+                      {provinces.map((province: IProvince) => (
                         <MenuItem
                           key={province.code}
                           value={`${province.code}/${province.name}`}>
@@ -455,6 +437,7 @@ const Register = () => {
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <Select
+                      error={!!errors.district}
                       size="small"
                       id="district"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
@@ -463,7 +446,7 @@ const Register = () => {
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      {districts.map((district: District) => (
+                      {districts.map((district: IDistrict) => (
                         <MenuItem
                           key={district.code}
                           value={`${district.code}/${district.name}`}>
@@ -493,15 +476,16 @@ const Register = () => {
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <Select
+                      error={!!errors.ward}
                       size="small"
                       id="ward"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
-                      defaultValue={''}
+                      defaultValue={ward}
                       {...field}
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      {wards.map((ward: Ward) => (
+                      {wards.map((ward: IWard) => (
                         <MenuItem key={ward.code} value={ward.name}>
                           {ward.name}
                         </MenuItem>

@@ -13,7 +13,7 @@ import {
   selectIsFetching
 } from '../../features/user/userSlice';
 
-import images from '../../assets/images';
+import { Background } from '../../assets/images';
 
 type FormData = {
   email: string;
@@ -33,6 +33,7 @@ const Wrapper = styled.div`
   position: relative;
   background-color: #ffffff;
   padding: 0;
+  overflow-x: hidden;
 `;
 const Container = styled.div`
   width: 100%;
@@ -45,7 +46,7 @@ const SideLeft = styled.div`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  background: url(${images.background});
+  background: url(${Background});
   background-size: cover;
 `;
 const SideRight = styled.div`
@@ -57,6 +58,7 @@ const SideRight = styled.div`
 const Form = styled.form`
   width: 376px;
   min-height: 480px;
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
