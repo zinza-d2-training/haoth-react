@@ -13,6 +13,7 @@ import {
   selectState
 } from '../../features/user/forgotPasswordSlice';
 import { useNavigate } from 'react-router-dom';
+import { Background } from '../../assets/images';
 
 type FormData = {
   email: string;
@@ -30,6 +31,7 @@ const Wrapper = styled.div`
   position: relative;
   background-color: #ffffff;
   padding: 0;
+  overflow-x: hidden;
 `;
 const Container = styled.div`
   width: 100%;
@@ -42,7 +44,7 @@ const SideLeft = styled.div`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  background: url('http://t3.gstatic.com/licensed-image?q=tbn:ANd9GcRX350AtXwfAeOrD-nrzZT3TzGdBVplfiffUbY1MXtZkEvwhW4Wlcn6qF8-wNA59qpT5Gfie1sa0e719GqBW74');
+  background: url(${Background});
   background-size: cover;
 `;
 const SideRight = styled.div`
@@ -54,6 +56,7 @@ const SideRight = styled.div`
 const Form = styled.form`
   width: 479px;
   min-height: 206px;
+  margin: auto;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
