@@ -6,6 +6,7 @@ const Wrapper = styled.div`
   width: 100vw;
   height: 132px;
   background-color: #f7fbfe;
+  box-sizing: border-box;
 `;
 const Container = styled.div`
   width: 1440px;
@@ -45,7 +46,13 @@ const Info = styled.div`
   flex-direction: column;
 `;
 const Sub = styled.sub`
-  font-size: 16px;
+  font-size: 13px;
+  font-style: italic;
+`;
+const Total = styled(Typography)`
+  font-size: 28px;
+  font-weight: 500;
+  text-align: left;
 `;
 const Composite = () => {
   return (
@@ -59,11 +66,9 @@ const Composite = () => {
               sx={{ fontSize: '16px', fontWeight: '700' }}>
               Đối tượng đăng kí tiêm
             </Typography>
-            <Typography
-              align="left"
-              sx={{ fontSize: '25px', fontWeight: '500' }}>
+            <Total>
               11,023,873<Sub>(lượt)</Sub>
-            </Typography>
+            </Total>
           </Info>
         </Component>
         <Divider></Divider>
@@ -75,11 +80,9 @@ const Composite = () => {
               sx={{ fontSize: '16px', fontWeight: '700' }}>
               Số mũi tiêm hôm qua
             </Typography>
-            <Typography
-              align="left"
-              sx={{ fontSize: '28px', fontWeight: '500' }}>
+            <Total>
               11,023,873<Sub>(mũi)</Sub>
-            </Typography>
+            </Total>
           </Info>
         </Component>
         <Divider></Divider>
@@ -91,11 +94,9 @@ const Composite = () => {
               sx={{ fontSize: '16px', fontWeight: '700' }}>
               Số mũi đã tiêm toàn quốc
             </Typography>
-            <Typography
-              align="left"
-              sx={{ fontSize: '28px', fontWeight: '500' }}>
+            <Total>
               11,023,873<Sub>(mũi)</Sub>
-            </Typography>
+            </Total>
           </Info>
         </Component>
       </Container>

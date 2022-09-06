@@ -9,7 +9,6 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: center;
   background: #2d2188;
-  overflow-x: hidden;
 `;
 const Container = styled.div`
   width: 1440px;

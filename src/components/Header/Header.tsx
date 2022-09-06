@@ -2,12 +2,12 @@ import React from 'react';
 import styled from '@emotion/styled';
 import { Logo as imgLogo } from '../../assets/images';
 import { Button, Typography } from '@mui/material';
-import { ArrowDropDown } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import { useLocalStorage } from '../../hooks';
+import CustomizedMenus from './Dropdown';
 const Wrapper = styled.div`
   width: 100vw;
   height: 80px;
-  overflow-x: hidden;
   display: flex;
   align-items: center;
   padding: 15px 0;
@@ -40,26 +40,40 @@ const Logo = styled.div`
 `;
 const Image = styled.img`
   width: 42px;
-  height: 50px;
+  height: 100%;
   object-fit: cover;
 `;
 const Menu = styled.ul`
   width: 524px;
-  height: 50px;
+  height: 100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   list-style-type: none;
 `;
-const MenuItem = styled(Link)`
+const LinkHeader = styled(Link)`
   margin: 0 2px;
-  padding: 10px;
+  padding: 0px 10px;
+  height: 100%;
   display: flex;
+  align-items: center;
   flex-direction: row;
   color: white;
   cursor: pointer;
   text-decoration: none;
+`;
+const MenuItem = styled(Button)`
+  margin: 0 2px;
+  padding: 0px 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: none;
 `;
 const ButtonLogin = styled(Button)`
   border-radius: 8px 8px 8px 0;
@@ -82,6 +96,7 @@ const TitleBtn = styled.span`
 `;
 
 const Header = () => {
+  const [currentUser] = useLocalStorage('user', '');
   return (
     <Wrapper>
       <Container>
@@ -102,21 +117,22 @@ const Header = () => {
           </Logo>
         </Branch>
         <Menu>
-          <MenuItem to={'/home'}>
+          <LinkHeader to={'/home'}>
             <Typography sx={{ fontWeight: '500' }}>Trang chủ</Typography>
-          </MenuItem>
-          <MenuItem to={'/home'}>
+          </LinkHeader>
+          <LinkHeader to={'/home'}>
             <Typography sx={{ fontWeight: '500' }}>Đăng kí tiêm</Typography>
-          </MenuItem>
-          <MenuItem to={'/home'}>
-            <Typography sx={{ fontWeight: '500' }}>Tra cứu</Typography>
-            <ArrowDropDown />
-          </MenuItem>
-          <MenuItem to={'/login'}>
-            <ButtonLogin>
-              <TitleBtn>Đăng nhập</TitleBtn>
-            </ButtonLogin>
-          </MenuItem>
+          </LinkHeader>
+          <CustomizedMenus />
+          {!!currentUser ? (
+            <MenuItem>{currentUser?.email}</MenuItem>
+          ) : (
+            <LinkHeader to={'/login'}>
+              <ButtonLogin>
+                <TitleBtn>Đăng nhập</TitleBtn>
+              </ButtonLogin>
+            </LinkHeader>
+          )}
         </Menu>
       </Container>
     </Wrapper>

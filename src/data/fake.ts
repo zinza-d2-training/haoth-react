@@ -1,4 +1,10 @@
-import { IDistrict, IProvince, IWard } from '../interfaces';
+import {
+  IDataChart,
+  IDistrict,
+  ILocation,
+  IProvince,
+  IWard
+} from '../interfaces';
 
 export const listProvinces: IProvince[] = [
   {
@@ -148,5 +154,227 @@ export const listWards: IWard[] = [
     division_type: 'xa',
     codename: 'xa_8',
     district_code: 8
+  }
+];
+
+export const dataChart: IDataChart[] = [
+  {
+    date: '07/08',
+    total: 183713
+  },
+  {
+    date: '08/08',
+    total: 184924
+  },
+  {
+    date: '09/08',
+    total: 451428
+  },
+  {
+    date: '10/08',
+    total: 486115
+  },
+  {
+    date: '11/08',
+    total: 635135
+  },
+  {
+    date: '12/08',
+    total: 619648
+  },
+  {
+    date: '13/08',
+    total: 311386
+  },
+  {
+    date: '14/08',
+    total: 152167
+  },
+  {
+    date: '15/08',
+    total: 306398
+  }
+];
+
+export const dataLocation: ILocation[] = [
+  {
+    id: 1,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 2,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 3,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 4,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 5,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 6,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 7,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 8,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 9,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 10,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 11,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 12,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 13,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 14,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 15,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 16,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 17,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
+  },
+  {
+    id: 18,
+    name: 'Bệnh viện Đa khoa Medlatec',
+    street: '42-44 Nghĩa Dũng',
+    ward: 'Phúc Xá',
+    district: 'Quận Ba Đình',
+    province: 'Thành Phố Hà Nội',
+    leader: 'Nguyễn Thị Kim Liên',
+    table: 1
   }
 ];

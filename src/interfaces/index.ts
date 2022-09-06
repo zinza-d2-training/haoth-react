@@ -21,3 +21,18 @@ export interface IProvince {
   division_type: string;
   phone_code: number;
 }
+export interface IDataChart {
+  date: string;
+  total: number;
+}
+
+export interface ILocation {
+  id: number;
+  name: string;
+  street: string;
+  ward: string;
+  district: string;
+  province: string;
+  leader: string;
+  table: number;
+}

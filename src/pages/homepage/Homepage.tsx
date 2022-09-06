@@ -1,15 +1,18 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import Composite from '../../components/Composite/Composite';
+import Chart from '../../components/Chart';
+import Location from '../../components/Location';
 const Wrapper = styled.div`
   width: 100vw;
+  overflow-x: hidden;
 `;
 const Container = styled.div`
+  box-sizing: border-box;
+  overflow-x: hidden;
   width: 1440px;
-  background-color: red;
   margin: 0 auto;
   padding: 0 36px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 `;
@@ -17,7 +20,10 @@ const Homepage = () => {
   return (
     <Wrapper>
       <Composite />
-      <Container></Container>
+      <Container>
+        <Chart />
+        <Location />
+      </Container>
     </Wrapper>
   );
 };

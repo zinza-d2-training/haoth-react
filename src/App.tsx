@@ -8,7 +8,6 @@ import {
 } from 'react-router-dom';
 import Login from './pages/login';
 import ForgotPassword from './pages/forgot-password';
-import User from './pages/user';
 import Register from './pages/register/Register';
 import { useAccessToken } from './hooks/useAccessToken';
 import Homepage from './pages/homepage/Homepage';
@@ -21,7 +20,11 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={token !== '' ? <User /> : <Navigate to="/login" />}
+            element={
+              <Layout>
+                <Homepage />
+              </Layout>
+            }
           />
           <Route
             path="/login"
