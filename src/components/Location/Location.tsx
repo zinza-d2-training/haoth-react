@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import {
   Autocomplete,
@@ -20,6 +20,8 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { LoadingButton } from '@mui/lab';
 import { Search } from '@mui/icons-material';
 import { dataLocation } from '../../data/fake';
+import { listProvinces, listDistricts, listWards } from '../../data/fake';
+import { IDistrict, ILocation, IProvince, IWard } from '../../interfaces';
 interface IFormData {
   province: string;
   district: string;
@@ -122,21 +124,10 @@ const columns: GridColDef[] = [
     headerAlign: 'center'
   }
 ];
-
-const top100Films = [
-  { label: 'The Shawshank Redemption', year: 1994 },
-  { label: 'The Godfather', year: 1972 },
-  { label: 'The Godfather: Part II', year: 1974 },
-  { label: 'The Dark Knight', year: 2008 },
-  { label: '12 Angry Men', year: 1957 },
-  { label: "Schindler's List", year: 1993 },
-  { label: 'Pulp Fiction', year: 1994 }
-];
 function CustomPagination() {
   const apiRef = useGridApiContext();
   const page = useGridSelector(apiRef, gridPageSelector);
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
-
   return (
     <Pagination
       color="primary"
@@ -151,10 +142,70 @@ function CustomPagination() {
   );
 }
 const Location = () => {
-  const { register, handleSubmit } = useForm<IFormData>({
-    mode: 'onChange'
+  const [listData, setListData] = useState<ILocation[]>(dataLocation);
+  const [provinceSelect, setProvinceSelect] = useState<IProvince>();
+  const [districtSelect, setDistrictSelect] = useState<IDistrict>();
+  const [provinces] = useState<IProvince[]>(listProvinces);
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [wards, setWards] = useState<IWard[]>([]);
+  const { setValue, register, handleSubmit } = useForm<IFormData>({
+    mode: 'onChange',
+    defaultValues: {
+      province: '',
+      district: '',
+      ward: ''
+    }
   });
-  const onSubmit: SubmitHandler<IFormData> = (data) => {};
+  const onSubmit: SubmitHandler<IFormData> = (data) => {
+    if (data.province !== '') {
+      const value = dataLocation
+        .filter((item) => {
+          if (data.province) {
+            return item.province === data.province;
+          }
+          return true;
+        })
+        .filter((item) => {
+          if (data.district) {
+            return item.district === data.district;
+          }
+          return true;
+        })
+        .filter((item) => {
+          if (data.ward) {
+            return item.ward === data.ward;
+          }
+          return true;
+        });
+      setListData(value);
+    } else {
+      setListData(dataLocation);
+    }
+  };
+  useEffect(() => {
+    if (!!provinceSelect) {
+      setValue('province', provinceSelect.label);
+      setValue('district', '');
+      setValue('ward', '');
+      setDistricts([]);
+      setWards([]);
+      const data = listDistricts.filter(
+        (item: IDistrict) => item.province_code === provinceSelect.code
+      );
+      setDistricts(data);
+    }
+  }, [provinceSelect, setValue]);
+  useEffect(() => {
+    if (!!districtSelect) {
+      setValue('district', districtSelect.label);
+      setValue('ward', '');
+      setWards([]);
+      const data = listWards.filter(
+        (item: IWard) => item.district_code === districtSelect.code
+      );
+      setWards(data);
+    }
+  }, [districtSelect, setValue]);
   return (
     <Wrapper>
       <Title>
@@ -166,9 +217,9 @@ const Location = () => {
         <Form onSubmit={handleSubmit(onSubmit)}>
           <Autocomplete
             disablePortal
-            id="combo-box-demo"
-            options={top100Films}
+            options={provinces}
             sx={{ width: 250, marginRight: '10px' }}
+            onChange={(event, value) => setProvinceSelect(value as IProvince)}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -180,8 +231,9 @@ const Location = () => {
           />
           <Autocomplete
             disablePortal
-            options={top100Films}
+            options={districts}
             sx={{ width: 250, marginRight: '10px' }}
+            onChange={(event, value) => setDistrictSelect(value as IDistrict)}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -193,7 +245,7 @@ const Location = () => {
           />
           <Autocomplete
             disablePortal
-            options={top100Films}
+            options={wards}
             sx={{ width: 250, marginRight: '10px' }}
             renderInput={(params) => (
               <TextField
@@ -214,7 +266,7 @@ const Location = () => {
       <Divider />
       <Container>
         <DataGrid
-          rows={dataLocation}
+          rows={listData}
           columns={columns}
           pageSize={10}
           rowsPerPageOptions={[10]}

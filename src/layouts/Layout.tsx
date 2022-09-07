@@ -13,11 +13,14 @@ const Wrapper = styled.div`
   overflow: hidden;
   flex-direction: column;
 `;
+const Content = styled.div`
+  margin-top: 80px;
+`;
 const Layout = (props: MainProps) => {
   return (
     <Wrapper>
       <Header />
-      {props.children}
+      <Content>{props.children}</Content>
       <Footer />
     </Wrapper>
   );

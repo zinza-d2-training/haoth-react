@@ -1,4 +1,5 @@
 export interface IWard {
+  label: string;
   code: number;
   name: string;
   codename: string;
@@ -6,6 +7,7 @@ export interface IWard {
   district_code: number;
 }
 export interface IDistrict {
+  label: string;
   code: number;
   wards?: IWard[];
   name: string;
@@ -14,6 +16,7 @@ export interface IDistrict {
   province_code: number;
 }
 export interface IProvince {
+  label: string;
   code: number;
   districts?: IDistrict[];
   name: string;
@@ -35,4 +38,7 @@ export interface ILocation {
   province: string;
   leader: string;
   table: number;
+}
+export interface IDataAutocomplete {
+  label: string;
 }

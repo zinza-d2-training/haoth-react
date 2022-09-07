@@ -72,13 +72,12 @@ const Footer = () => {
             sx={{
               fontSize: '14px',
               fontWeight: '400',
-              color: '#FFFFFF',
-              marginBottom: '3px'
+              color: '#FFFFFF'
             }}>
             Phát triển bởi{' '}
             <Typography component={'span'} sx={{ color: '#D32F2F' }}>
               Viettel
-            </Typography>{' '}
+            </Typography>
           </Typography>
           <Logo src={Logo_2} alt="Logo2" />
         </Frame>

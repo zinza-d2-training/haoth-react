@@ -6,6 +6,9 @@ import { Link } from 'react-router-dom';
 import { useLocalStorage } from '../../hooks';
 import CustomizedMenus from './Dropdown';
 const Wrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 80px;
   display: flex;
