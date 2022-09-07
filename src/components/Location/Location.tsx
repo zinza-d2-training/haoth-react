@@ -29,7 +29,8 @@ interface IFormData {
 }
 
 const Wrapper = styled.div`
-  margin: 20px 0px;
+  width: 100%;
+  margin: 20px auto;
   padding: 15px;
   box-sizing: border-box;
   background-color: #ffffff;
@@ -42,8 +43,9 @@ const Wrapper = styled.div`
 `;
 const Title = styled.div``;
 const SearchContainer = styled.div`
-  margin: 10px;
+  margin: 10px 0px;
   width: 100%;
+  overflow-x: hidden;
 `;
 const Form = styled.form`
   width: 100%;
@@ -54,7 +56,7 @@ const Form = styled.form`
 `;
 const Container = styled.div`
   width: 100%;
-  height: 637px;
+  max-height: 637px;
   margin: 5px 0;
 `;
 const BtnSearch = styled(LoadingButton)`
@@ -266,6 +268,7 @@ const Location = () => {
       <Divider />
       <Container>
         <DataGrid
+          autoHeight
           rows={listData}
           columns={columns}
           pageSize={10}

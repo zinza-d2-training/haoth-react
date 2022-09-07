@@ -19,6 +19,7 @@ const Container = styled.div`
 `;
 const Component = styled.div`
   padding: 0 10px;
+  box-sizing: border-box;
   flex: 1;
   background: #ffffff;
   display: flex;
@@ -29,7 +30,6 @@ const Component = styled.div`
 const Divider = styled.div`
   width: 1px;
   height: 100px;
-  gap: 10px;
   background: #eeeeee;
   display: flex;
   flex-direction: column;
@@ -40,6 +40,7 @@ const Icon = styled.img`
   width: 46px;
   height: 44px;
   margin-right: 15px;
+  overflow-x: hidden;
 `;
 const Info = styled.div`
   display: flex;

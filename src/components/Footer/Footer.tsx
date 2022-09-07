@@ -3,7 +3,8 @@ import styled from '@emotion/styled';
 import { Button, Typography } from '@mui/material';
 import { Cert, Logo_2 } from '../../assets/images';
 const Wrapper = styled.div`
-  width: 100%;
+  overflow-x: hidden;
+  width: 100vw;
   height: 256px;
   display: flex;
   align-items: center;
@@ -11,7 +12,9 @@ const Wrapper = styled.div`
   background: #2d2188;
 `;
 const Container = styled.div`
-  width: 1440px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
   height: 256px;
   margin: 0 auto;
   padding: 0 36px;
@@ -21,8 +24,6 @@ const Container = styled.div`
   justify-content: space-between;
 `;
 const Frame = styled.div`
-  width: 557px;
-  height: 137px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -58,8 +59,8 @@ const Footer = () => {
           <Typography
             component="span"
             align="left"
+            variant='body2'
             sx={{
-              fontSize: '14px',
               color: '#FFFFFF',
               marginBottom: '3px'
             }}>

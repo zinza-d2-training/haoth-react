@@ -9,6 +9,7 @@ const Wrapper = styled.div`
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 999;
   width: 100vw;
   height: 80px;
   display: flex;
@@ -18,8 +19,9 @@ const Wrapper = styled.div`
   background: linear-gradient(90deg, #ed1b23 0%, #2e3091 52.08%, #253494 100%);
 `;
 const Container = styled.div`
-  width: 1440px;
-  height: 50px;
+  width: 100%;
+  max-width: 1440px;
+  height: 80px;
   margin: 0 auto;
   padding: 0 36px;
   display: flex;
@@ -27,9 +29,9 @@ const Container = styled.div`
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+  overflow-x: hidden;
 `;
 const Branch = styled.div`
-  width: 435px;
   height: 50px;
   display: flex;
   flex-direction: row;
@@ -47,11 +49,10 @@ const Image = styled.img`
   object-fit: cover;
 `;
 const Menu = styled.ul`
-  width: 524px;
   height: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   list-style-type: none;
 `;
@@ -89,13 +90,9 @@ const ButtonLogin = styled(Button)`
   }
 `;
 const TitleBtn = styled.span`
-  /* color: #303F9F; */
   font-weight: 500;
   letter-spacing: -0.04px;
   font-size: 16px;
-  &:hover {
-    color: white;
-  }
 `;
 
 const Header = () => {
@@ -111,7 +108,6 @@ const Header = () => {
                 color: '#FFFFFF',
                 fontWeight: 400,
                 fontSize: '20px',
-                marginLeft: '20px'
               }}
               component="h6"
               variant="h6">

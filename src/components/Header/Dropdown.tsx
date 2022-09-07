@@ -118,7 +118,7 @@ export default function CustomizedMenus() {
           <Li to={'/'}>
             <Icon src={peopleAlt1} alt="People" />
             <Title>
-              <Typography sx={{ fontSize: '16px' }}>
+              <Typography variant='body1'>
                 Tra cứu chứng nhận tiêm
               </Typography>
               <Typography sx={{ fontSize: '12px' }}>
@@ -134,7 +134,7 @@ export default function CustomizedMenus() {
           <Li to={'/'}>
             <Icon src={peopleAlt2} alt="People" />
             <Title>
-              <Typography sx={{ fontSize: '16px' }}>
+              <Typography variant='body1'>
                 Tra cứu kết quả đăng kí
               </Typography>
               <Typography sx={{ fontSize: '12px' }}>

@@ -5,12 +5,12 @@ import Chart from '../../components/Chart';
 import Location from '../../components/Location';
 const Wrapper = styled.div`
   width: 100vw;
-  overflow-x: hidden;
+  box-sizing: border-box;
 `;
 const Container = styled.div`
   box-sizing: border-box;
-  overflow-x: hidden;
-  width: 1440px;
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 36px;
   display: flex;
