@@ -107,7 +107,7 @@ const Header = () => {
               sx={{
                 color: '#FFFFFF',
                 fontWeight: 400,
-                fontSize: '20px',
+                fontSize: '20px'
               }}
               component="h6"
               variant="h6">

@@ -59,7 +59,7 @@ const Footer = () => {
           <Typography
             component="span"
             align="left"
-            variant='body2'
+            variant="body2"
             sx={{
               color: '#FFFFFF',
               marginBottom: '3px'
