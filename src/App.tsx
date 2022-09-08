@@ -6,20 +6,29 @@ import {
   Route,
   Navigate
 } from 'react-router-dom';
+import styled from '@emotion/styled';
 import Login from './pages/login';
 import ForgotPassword from './pages/forgot-password';
-import User from './pages/user';
 import Register from './pages/register/Register';
 import { useAccessToken } from './hooks/useAccessToken';
+import Homepage from './pages/homepage/Homepage';
+import Layout from './layouts/Layout';
+const Wrapper = styled.div`
+  overflow-x: hidden;
+`;
 function App() {
   const token = useAccessToken();
   return (
-    <div className="App">
+    <Wrapper>
       <Router>
         <Routes>
           <Route
             path="/"
-            element={token !== '' ? <User /> : <Navigate to="/login" />}
+            element={
+              <Layout>
+                <Homepage />
+              </Layout>
+            }
           />
           <Route
             path="/login"
@@ -33,9 +42,17 @@ function App() {
             path="/register"
             element={token === '' ? <Register /> : <Navigate to={'/'} />}
           />
+          <Route
+            path="/home"
+            element={
+              <Layout>
+                <Homepage />
+              </Layout>
+            }
+          />
         </Routes>
       </Router>
-    </div>
+    </Wrapper>
   );
 }
 
