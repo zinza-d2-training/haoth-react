@@ -74,8 +74,7 @@ const Chart = () => {
         <Typography
           sx={{
             color: 'rgba(0, 0, 0, 0.87)',
-            fontWeight: '500',
-            fontSize: '20PX'
+            fontWeight: '500'
           }}
           component={'h6'}
           variant="h6">

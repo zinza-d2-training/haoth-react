@@ -6,16 +6,20 @@ import {
   Route,
   Navigate
 } from 'react-router-dom';
+import styled from '@emotion/styled';
 import Login from './pages/login';
 import ForgotPassword from './pages/forgot-password';
 import Register from './pages/register/Register';
 import { useAccessToken } from './hooks/useAccessToken';
 import Homepage from './pages/homepage/Homepage';
 import Layout from './layouts/Layout';
+const Wrapper = styled.div`
+  overflow-x: hidden;
+`;
 function App() {
   const token = useAccessToken();
   return (
-    <div className="App">
+    <Wrapper>
       <Router>
         <Routes>
           <Route
@@ -48,7 +52,7 @@ function App() {
           />
         </Routes>
       </Router>
-    </div>
+    </Wrapper>
   );
 }
 

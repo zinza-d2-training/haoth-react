@@ -47,6 +47,7 @@ const Image = styled.img`
   width: 42px;
   height: 100%;
   object-fit: cover;
+  margin-right: 15px;
 `;
 const Menu = styled.ul`
   height: 100%;
@@ -106,8 +107,7 @@ const Header = () => {
             <Typography
               sx={{
                 color: '#FFFFFF',
-                fontWeight: 400,
-                fontSize: '20px'
+                fontWeight: 400
               }}
               component="h6"
               variant="h6">
@@ -117,12 +117,21 @@ const Header = () => {
         </Branch>
         <Menu>
           <LinkHeader to={'/home'}>
-            <Typography sx={{ fontWeight: '500' }}>Trang chủ</Typography>
+            <Typography variant="body1" sx={{ fontWeight: '500' }}>
+              Trang chủ
+            </Typography>
           </LinkHeader>
           <LinkHeader to={'/home'}>
-            <Typography sx={{ fontWeight: '500' }}>Đăng kí tiêm</Typography>
+            <Typography variant="body1" sx={{ fontWeight: '500' }}>
+              Đăng kí tiêm
+            </Typography>
           </LinkHeader>
           <CustomizedMenus />
+          <LinkHeader to={'/home'}>
+            <Typography variant="body1" sx={{ fontWeight: '500' }}>
+              Tài liệu
+            </Typography>
+          </LinkHeader>
           {!!currentUser ? (
             <MenuItem>{currentUser?.email}</MenuItem>
           ) : (

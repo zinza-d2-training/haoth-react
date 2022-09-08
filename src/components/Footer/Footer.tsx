@@ -70,8 +70,8 @@ const Footer = () => {
             </strong>
           </Typography>
           <Typography
+            variant="body2"
             sx={{
-              fontSize: '14px',
               fontWeight: '400',
               color: '#FFFFFF'
             }}>
@@ -84,8 +84,9 @@ const Footer = () => {
         </Frame>
         <Frame2>
           <Typography
+            variant="body2"
             align="left"
-            sx={{ color: '#FFFFFF', fontSize: '14px', fontWeight: '400' }}>
+            sx={{ color: '#FFFFFF', fontWeight: '400' }}>
             Tải sổ sức khỏe điện tử để đăng kí tiêm và nhận giấy chứng nhận tiêm
           </Typography>
           <ContainerButton>

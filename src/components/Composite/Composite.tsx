@@ -50,11 +50,6 @@ const Sub = styled.sub`
   font-size: 13px;
   font-style: italic;
 `;
-const Total = styled(Typography)`
-  font-size: 28px;
-  font-weight: 500;
-  text-align: left;
-`;
 const Composite = () => {
   return (
     <Wrapper>
@@ -64,12 +59,13 @@ const Composite = () => {
           <Info>
             <Typography
               align="left"
-              sx={{ fontSize: '16px', fontWeight: '700' }}>
+              variant="subtitle1"
+              sx={{ fontWeight: '700' }}>
               Đối tượng đăng kí tiêm
             </Typography>
-            <Total>
+            <Typography sx={{ fontWeight: '500' }} align="left" variant="h5">
               11,023,873<Sub>(lượt)</Sub>
-            </Total>
+            </Typography>
           </Info>
         </Component>
         <Divider></Divider>
@@ -78,12 +74,13 @@ const Composite = () => {
           <Info>
             <Typography
               align="left"
-              sx={{ fontSize: '16px', fontWeight: '700' }}>
+              variant="subtitle1"
+              sx={{ fontWeight: '700' }}>
               Số mũi tiêm hôm qua
             </Typography>
-            <Total>
+            <Typography sx={{ fontWeight: '500' }} align="left" variant="h5">
               11,023,873<Sub>(mũi)</Sub>
-            </Total>
+            </Typography>
           </Info>
         </Component>
         <Divider></Divider>
@@ -92,12 +89,13 @@ const Composite = () => {
           <Info>
             <Typography
               align="left"
-              sx={{ fontSize: '16px', fontWeight: '700' }}>
+              variant="subtitle1"
+              sx={{ fontWeight: '700' }}>
               Số mũi đã tiêm toàn quốc
             </Typography>
-            <Total>
+            <Typography sx={{ fontWeight: '500' }} align="left" variant="h5">
               11,023,873<Sub>(mũi)</Sub>
-            </Total>
+            </Typography>
           </Info>
         </Component>
       </Container>

@@ -147,10 +147,11 @@ const Location = () => {
   const [listData, setListData] = useState<ILocation[]>(dataLocation);
   const [provinceSelect, setProvinceSelect] = useState<IProvince>();
   const [districtSelect, setDistrictSelect] = useState<IDistrict>();
+  const [wardSelect, setWardSelect] = useState<IWard>();
   const [provinces] = useState<IProvince[]>(listProvinces);
   const [districts, setDistricts] = useState<IDistrict[]>([]);
   const [wards, setWards] = useState<IWard[]>([]);
-  const { setValue, register, handleSubmit } = useForm<IFormData>({
+  const { watch, setValue, register, handleSubmit } = useForm<IFormData>({
     mode: 'onChange',
     defaultValues: {
       province: '',
@@ -158,6 +159,49 @@ const Location = () => {
       ward: ''
     }
   });
+  const province = watch('province');
+  const district = watch('district');
+  const ward = watch('ward');
+  useEffect(() => {
+    if (!!provinceSelect) {
+      setValue('district', '');
+      setValue('ward', '');
+      setValue('province', provinceSelect.label);
+      setDistricts([]);
+      setWards([]);
+      const data = listDistricts.filter(
+        (item: IDistrict) => item.province_code === provinceSelect.code
+      );
+      setDistricts(data);
+    }
+  }, [provinceSelect, setValue]);
+  useEffect(() => {
+    if (!!districtSelect) {
+      setValue('district', districtSelect.label);
+      setValue('ward', '');
+      setWards([]);
+      const data = listWards.filter(
+        (item: IWard) => item.district_code === districtSelect.code
+      );
+      setWards(data);
+    }
+  }, [districtSelect, setValue]);
+  useEffect(() => {
+    if (province === '') {
+      setValue('district', '');
+      setValue('ward', '');
+    }
+  }, [province, setValue]);
+  useEffect(() => {
+    if (district === '') {
+      setValue('ward', '');
+    }
+  }, [district, setValue]);
+  useEffect(() => {
+    if (!!wardSelect) {
+      setValue('ward', wardSelect.label);
+    }
+  }, [wardSelect, setValue]);
   const onSubmit: SubmitHandler<IFormData> = (data) => {
     if (data.province !== '') {
       const value = dataLocation
@@ -184,30 +228,6 @@ const Location = () => {
       setListData(dataLocation);
     }
   };
-  useEffect(() => {
-    if (!!provinceSelect) {
-      setValue('province', provinceSelect.label);
-      setValue('district', '');
-      setValue('ward', '');
-      setDistricts([]);
-      setWards([]);
-      const data = listDistricts.filter(
-        (item: IDistrict) => item.province_code === provinceSelect.code
-      );
-      setDistricts(data);
-    }
-  }, [provinceSelect, setValue]);
-  useEffect(() => {
-    if (!!districtSelect) {
-      setValue('district', districtSelect.label);
-      setValue('ward', '');
-      setWards([]);
-      const data = listWards.filter(
-        (item: IWard) => item.district_code === districtSelect.code
-      );
-      setWards(data);
-    }
-  }, [districtSelect, setValue]);
   return (
     <Wrapper>
       <Title>
@@ -220,8 +240,10 @@ const Location = () => {
           <Autocomplete
             disablePortal
             options={provinces}
+            inputValue={province}
             sx={{ width: 250, marginRight: '10px' }}
             onChange={(event, value) => setProvinceSelect(value as IProvince)}
+            isOptionEqualToValue={() => true}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -232,10 +254,13 @@ const Location = () => {
             )}
           />
           <Autocomplete
+            readOnly={province === ''}
             disablePortal
             options={districts}
+            inputValue={district}
             sx={{ width: 250, marginRight: '10px' }}
             onChange={(event, value) => setDistrictSelect(value as IDistrict)}
+            isOptionEqualToValue={() => true}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -247,8 +272,12 @@ const Location = () => {
           />
           <Autocomplete
             disablePortal
+            readOnly={district === ''}
             options={wards}
+            inputValue={ward}
             sx={{ width: 250, marginRight: '10px' }}
+            onChange={(event, value) => setWardSelect(value as IWard)}
+            isOptionEqualToValue={() => true}
             renderInput={(params) => (
               <TextField
                 {...params}
