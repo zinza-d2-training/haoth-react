@@ -121,7 +121,7 @@ const Header = () => {
               Trang chủ
             </Typography>
           </LinkHeader>
-          <LinkHeader to={'/home'}>
+          <LinkHeader to={'/registration-step-1'}>
             <Typography variant="body1" sx={{ fontWeight: '500' }}>
               Đăng kí tiêm
             </Typography>

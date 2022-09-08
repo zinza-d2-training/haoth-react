@@ -42,3 +42,12 @@ export interface ILocation {
 export interface IDataAutocomplete {
   label: string;
 }
+
+export interface IGroup {
+  id: number;
+  label: string;
+}
+export interface IShift {
+  id: number;
+  label: string;
+}

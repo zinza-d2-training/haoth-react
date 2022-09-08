@@ -1,8 +1,10 @@
 import {
   IDataChart,
   IDistrict,
+  IGroup,
   ILocation,
   IProvince,
+  IShift,
   IWard
 } from '../interfaces';
 
@@ -395,5 +397,45 @@ export const dataLocation: ILocation[] = [
     province: 'Thành Phố Hà Nội',
     leader: 'Nguyễn Thị Kim Liên',
     table: 1
+  }
+];
+
+export const groups: IGroup[] = [
+  {
+    id: 1,
+    label:
+      '1. Người làm việc trong các cơ sở y tế, ngành y tế (công lập và tư nhân)'
+  },
+  {
+    id: 2,
+    label:
+      '2. Người tham gia phòng chống dịch (Thành viên Ban chỉ đạo phòng, chống dịch các cấp, người làm việc ở các khu cách ly, làm nhiệm vụ truy vết, điều tra dịch tễ, tổ Covid dựa vào cộng đồng, tình nguyện viên, phóng viên...)'
+  },
+  {
+    id: 3,
+    label: '3. Lực lượng Quân đội'
+  },
+  {
+    id: 4,
+    label: '4. Lực lượng Công an'
+  },
+  {
+    id: 5,
+    label:
+      '5. Nhân viên, cán bộ ngoại giao của Việt Nam và thân nhân được cử đi nước ngoài; người làm việc trong các cơ quan Ngoại giao, Lãnh sự, các tổ chức quốc tế hoạt động tại Việt Nam'
+  }
+];
+export const shifts: IShift[] = [
+  {
+    id: 0,
+    label: 'Buổi sáng'
+  },
+  {
+    id: 1,
+    label: 'Buổi chiều'
+  },
+  {
+    id: 2,
+    label: 'Cả ngày'
   }
 ];
