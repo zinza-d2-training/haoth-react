@@ -1,10 +1,14 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import userReducer from '../features/user/userSlice';
-import forgotPasswordReducer from '../features/user/forgotPasswordSlice';
+import {
+  userReducer,
+  forgotPasswordReducer,
+  registrationVaccineReducer
+} from '../features/user/';
 export const store = configureStore({
   reducer: {
     user: userReducer,
-    forgotPassword: forgotPasswordReducer
+    forgotPassword: forgotPasswordReducer,
+    registrationVaccine: registrationVaccineReducer
   }
 });
 

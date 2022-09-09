@@ -13,6 +13,11 @@ import Register from './pages/register/Register';
 import { useAccessToken } from './hooks/useAccessToken';
 import Homepage from './pages/homepage/Homepage';
 import Layout from './layouts/Layout';
+import {
+  RegistrationOne,
+  RegistrationTwo,
+  RegistrationThree
+} from './pages/vaccine-registration';
 const Wrapper = styled.div`
   overflow-x: hidden;
 `;
@@ -47,6 +52,30 @@ function App() {
             element={
               <Layout>
                 <Homepage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/registration-step-1"
+            element={
+              <Layout>
+                <RegistrationOne />
+              </Layout>
+            }
+          />
+          <Route
+            path="/registration-step-2"
+            element={
+              <Layout>
+                <RegistrationTwo />
+              </Layout>
+            }
+          />
+          <Route
+            path="/registration-step-3"
+            element={
+              <Layout>
+                <RegistrationThree />
               </Layout>
             }
           />
