@@ -157,7 +157,7 @@ const RegistrationOne = () => {
       job: '',
       address: '',
       time: Date(),
-      shift: ''
+      shift: 'Cả ngày'
     }
   });
   const onSubmit: SubmitHandler<IFormData> = (data) => {
@@ -298,6 +298,7 @@ const RegistrationOne = () => {
                 <InputComponent>
                   <Title>Buổi tiêm mong muốn</Title>
                   <Autocomplete
+                    defaultValue={shifts[2]}
                     sx={{ width: '100%' }}
                     options={shifts}
                     onChange={(event, value) =>

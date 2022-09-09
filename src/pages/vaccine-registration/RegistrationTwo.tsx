@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Heading from './Heading';
 import StepCheck from './StepCheck';
@@ -10,8 +10,11 @@ import {
   Typography,
   Checkbox
 } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowBack } from '@mui/icons-material';
+import { useLocalStorage } from '../../hooks';
+import { useAppDispatch } from '../../app';
+import { registrationAsync } from '../../features/user/registrationVaccineSlice';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -97,13 +100,47 @@ const Continue = styled(Button)`
     color: #ffffff;
   }
 `;
+interface Ilocation {
+  pathname: string;
+  hash: string;
+  key: string;
+  search: string;
+  state: any;
+}
 const RegistrationTwo = () => {
+  const dispatch = useAppDispatch();
+  const [user] = useLocalStorage('user', '');
+  const [check, setCheck] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const location: Ilocation = useLocation();
+  const data = location.state?.data || null;
+  useEffect(() => {
+    if (data === null) {
+      navigate('/registration-step-1');
+    }
+  }, [data, navigate]);
+  const handleContinue = (e: any) => {
+    e.preventDefault();
+    if (check) {
+      const vaccineRegistrationInfo = {
+        ...data,
+        userId: user.id || 'sadjsabass' //fake k can dang nhap
+      };
+      new Promise((resolver) => {
+        dispatch(registrationAsync(vaccineRegistrationInfo));
+      });
+      setTimeout(() => {
+        navigate('/registration-step-3');
+      }, 1000);
+    }
+  };
+
   return (
     <Wrapper>
       <Heading />
       <Container>
         <StepCheck currentStep={1} />
-        <Form>
+        <Form onSubmit={handleContinue}>
           <List>
             <Item>
               <Image>
@@ -156,7 +193,8 @@ const RegistrationTwo = () => {
             </Typography>
             <FormGroup>
               <FormControlLabel
-                control={<Checkbox name="agree" />}
+                onChange={() => setCheck(!check)}
+                control={<Checkbox checked={check} name="agree" />}
                 label="Đồng ý tiêm chủng"
               />
             </FormGroup>
@@ -169,13 +207,9 @@ const RegistrationTwo = () => {
                 <Typography sx={{ fontWeight: 500 }}>Hủy bỏ</Typography>
               </Cancel>
             </Link>
-            <Link
-              style={{ textDecoration: 'none' }}
-              to={'/registration-step-3'}>
-              <Continue startIcon={<ArrowBack />}>
-                <Typography sx={{ fontWeight: 500 }}>Tiếp tục</Typography>
-              </Continue>
-            </Link>
+            <Continue type="submit" disabled={!check} startIcon={<ArrowBack />}>
+              <Typography sx={{ fontWeight: 500 }}>Tiếp tục</Typography>
+            </Continue>
           </Submit>
         </Form>
       </Container>

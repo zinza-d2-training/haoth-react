@@ -5,7 +5,8 @@ import {
   ILocation,
   IProvince,
   IShift,
-  IWard
+  IWard,
+  IUser
 } from '../interfaces';
 
 export const listProvinces: IProvince[] = [
@@ -437,5 +438,31 @@ export const shifts: IShift[] = [
   {
     id: 2,
     label: 'Cả ngày'
+  }
+];
+export const listUsers: IUser[] = [
+  {
+    id: 'sadjsabass',
+    email: 'user1@gmail.com',
+    password: '123456789',
+    name: 'John Smith',
+    province: 'Thành phố Hà Nội',
+    district: 'Quận Hai Bà Trưng',
+    ward: 'Phường Bách Khoa',
+    card: '0123456789',
+    gender: 'Nam',
+    birthday: Date()
+  },
+  {
+    id: 'fadgsvhbj',
+    email: 'user2@gmail.com',
+    password: '123456789',
+    name: 'Peter',
+    province: 'string',
+    district: 'string',
+    ward: 'string',
+    card: '0123456789',
+    gender: 'Nam',
+    birthday: Date()
   }
 ];

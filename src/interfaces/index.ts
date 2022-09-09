@@ -51,3 +51,27 @@ export interface IShift {
   id: number;
   label: string;
 }
+
+export interface IVaccineRegistrationInfo {
+  id: number;
+  userId: string;
+  group: string;
+  cardInsurance: string;
+  job: string;
+  workplace: string;
+  address: string;
+  time: string;
+  shift: string;
+}
+export interface IUser {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  province: string;
+  district: string;
+  ward: string;
+  card: string;
+  gender: string;
+  birthday: string;
+}

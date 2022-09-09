@@ -1,25 +1,11 @@
-export interface User {
-  id: string;
-  email: string;
-  password: string;
-}
-export type InfoUser = Partial<User>;
+import { IVaccineRegistrationInfo } from '../../interfaces';
+import { listUsers } from '../../data/fake';
+import { IUser } from '../../interfaces';
+export type InfoUser = Partial<IUser>;
 export interface UserResponse {
   user: InfoUser;
   token: string;
 }
-export const listUsers: User[] = [
-  {
-    id: 'sadjsabass',
-    email: 'user1@gmail.com',
-    password: '123456789'
-  },
-  {
-    id: 'fadgsvhbj',
-    email: 'user2@gmail.com',
-    password: '123456789'
-  }
-];
 export const fetchLogin = (payload: InfoUser) => {
   return new Promise<{ data: UserResponse }>((resolve, rejected) => {
     setTimeout(() => {
@@ -29,7 +15,7 @@ export const fetchLogin = (payload: InfoUser) => {
         );
       });
       if (res) {
-        const { password, ...others }: any = res;
+        const { password, ...others }: InfoUser = res;
         resolve({ data: { user: others, token: '' + Date.now() } });
       } else {
         rejected();
@@ -43,4 +29,21 @@ export const fetchForgotPassword = (email: string) => {
       resolver({ data: 'Xem email cua ban' });
     }, 2000);
   });
+};
+
+export const fetchRegistration = (payload: IVaccineRegistrationInfo) => {
+  return new Promise<{ data: IVaccineRegistrationInfo }>((resolver) => {
+    setTimeout(() => {
+      resolver({
+        data: payload
+      });
+    }, 1000);
+  });
+};
+export const fetchUser = (id: string) => {
+  const res = listUsers.find((user) => user.id === id);
+  if (res) {
+    const { password, ...others }: InfoUser = res;
+    return others;
+  }
 };
