@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import StepCheck from './StepCheck';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import Heading from './Heading';
 
 import { groups as listGroups, shifts } from '../../data/fake';
@@ -349,7 +349,7 @@ const RegistrationOne = () => {
               <Continue
                 disabled={!isValid}
                 type="submit"
-                startIcon={<ArrowBack />}>
+                startIcon={<ArrowForward />}>
                 <Typography sx={{ fontWeight: 500 }}>Tiếp tục</Typography>
               </Continue>
             </Submit>

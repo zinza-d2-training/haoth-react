@@ -11,7 +11,7 @@ import {
   Checkbox
 } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useLocalStorage } from '../../hooks';
 import { useAppDispatch } from '../../app';
 import { registrationAsync } from '../../features/user/registrationVaccineSlice';
@@ -207,7 +207,10 @@ const RegistrationTwo = () => {
                 <Typography sx={{ fontWeight: 500 }}>Hủy bỏ</Typography>
               </Cancel>
             </Link>
-            <Continue type="submit" disabled={!check} startIcon={<ArrowBack />}>
+            <Continue
+              type="submit"
+              disabled={!check}
+              startIcon={<ArrowForward />}>
               <Typography sx={{ fontWeight: 500 }}>Tiếp tục</Typography>
             </Continue>
           </Submit>

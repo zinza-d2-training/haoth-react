@@ -4,7 +4,7 @@ import Heading from './Heading';
 import StepCheck from './StepCheck';
 import { Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { useLocalStorage } from '../../hooks';
@@ -209,7 +209,7 @@ const RegistrationThree = () => {
                 <Typography sx={{ fontWeight: 500 }}>Trang chủ</Typography>
               </Cancel>
             </Link>
-            <Continue onClick={exportPDF} startIcon={<ArrowBack />}>
+            <Continue onClick={exportPDF} startIcon={<ArrowForward />}>
               <Typography sx={{ fontWeight: 500 }}>Xuất thông tin</Typography>
             </Continue>
           </Submit>
