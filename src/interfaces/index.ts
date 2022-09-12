@@ -75,3 +75,13 @@ export interface IUser {
   gender: string;
   birthday: string;
 }
+
+export interface IVaccineUsed {
+  id: number;
+  userId: string;
+  vaccineName: string;
+  numberLot: string;
+  time: string;
+  location: string;
+  numberInjection: number;
+}

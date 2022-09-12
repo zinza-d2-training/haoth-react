@@ -6,7 +6,9 @@ import {
   IProvince,
   IShift,
   IWard,
-  IUser
+  IUser,
+  IVaccineUsed,
+  IVaccineRegistrationInfo
 } from '../interfaces';
 
 export const listProvinces: IProvince[] = [
@@ -464,5 +466,69 @@ export const listUsers: IUser[] = [
     card: '0123456789',
     gender: 'Nam',
     birthday: Date()
+  }
+];
+
+export const listVaccineUsed: IVaccineUsed[] = [
+  {
+    id: 1,
+    userId: 'sadjsabass',
+    vaccineName: 'Vaccine Vero Cell',
+    numberLot: 'VC201',
+    time: Date(),
+    location: 'Xã Vĩnh Ninh - Vĩnh Quỳnh - Thanh Trì- Hà Nội',
+    numberInjection: 1
+  },
+  {
+    id: 2,
+    userId: 'sadjsabass',
+    vaccineName: 'Vaccine Vero Cell',
+    numberLot: 'VC201',
+    time: Date(),
+    location: 'Xã Vĩnh Ninh - Vĩnh Quỳnh - Thanh Trì- Hà Nội',
+    numberInjection: 2
+  },
+  {
+    id: 3,
+    userId: 'fadgsvhbj',
+    vaccineName: 'Vaccine Vero Cell',
+    numberLot: 'VC201',
+    time: Date(),
+    location: 'Xã Vĩnh Ninh - Vĩnh Quỳnh - Thanh Trì- Hà Nội',
+    numberInjection: 1
+  },
+  {
+    id: 4,
+    userId: 'fadgsvhbj',
+    vaccineName: 'Vaccine Vero Cell',
+    numberLot: 'VC201',
+    time: Date(),
+    location: 'Xã Vĩnh Ninh - Vĩnh Quỳnh - Thanh Trì- Hà Nội',
+    numberInjection: 2
+  }
+];
+
+export const listVaccineRegistration: IVaccineRegistrationInfo[] = [
+  {
+    id: 1,
+    userId: 'sadjsabass',
+    group: 'aaaaaaaaaaa',
+    cardInsurance: '0123456789',
+    job: 'aaaaaa',
+    workplace: 'aaaaaaa',
+    address: 'aaaaaa',
+    time: Date(),
+    shift: 'Ca sang'
+  },
+  {
+    id: 2,
+    userId: 'fadgsvhbj',
+    group: 'aaaaaaaaaaa',
+    cardInsurance: '0123456789',
+    job: 'aaaaaa',
+    workplace: 'aaaaaaa',
+    address: 'aaaaaa',
+    time: Date(),
+    shift: 'Ca sang'
   }
 ];
