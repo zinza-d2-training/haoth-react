@@ -298,7 +298,7 @@ export const dataLocation: ILocation[] = [
     ward: 'Phúc Xá',
     district: 'Quận Ba Đình',
     province: 'Hà Nam',
-    leader: 'Nguyễn Thị Kim Liên',
+    leader: 'Nguyễn Thị Kim Liên Lie',
     table: 1
   },
   {

@@ -127,7 +127,7 @@ const Header = () => {
             </Typography>
           </LinkHeader>
           <CustomizedMenus />
-          <LinkHeader to={'/home'}>
+          <LinkHeader to={'/admin/place'}>
             <Typography variant="body1" sx={{ fontWeight: '500' }}>
               Tài liệu
             </Typography>
