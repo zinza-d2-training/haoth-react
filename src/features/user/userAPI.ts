@@ -1,5 +1,5 @@
-import { IVaccineRegistrationInfo } from '../../interfaces';
-import { listUsers } from '../../data/fake';
+import { IVaccineRegistrationInfo, IVaccineUsed } from '../../interfaces';
+import { listUsers, listVaccineUsed } from '../../data/fake';
 import { IUser } from '../../interfaces';
 export type InfoUser = Partial<IUser>;
 export interface UserResponse {
@@ -46,4 +46,17 @@ export const fetchUser = (id: string) => {
     const { password, ...others }: InfoUser = res;
     return others;
   }
+};
+export const fetchVaccineUsed = (userId: string) => {
+  const res = listVaccineUsed.filter(
+    (item: IVaccineUsed) => item.userId === userId
+  );
+  return res;
+};
+
+export const fetchUpdateInformation = (data: Partial<IUser>) => {
+  return data;
+};
+export const fetchUpdatePassword = (password: string) => {
+  return password;
 };

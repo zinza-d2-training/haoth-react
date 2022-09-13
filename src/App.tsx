@@ -18,6 +18,8 @@ import {
   RegistrationTwo,
   RegistrationThree
 } from './pages/vaccine-registration';
+import { Account, Certification, ResultRegistration } from './pages/user';
+
 const Wrapper = styled.div`
   overflow-x: hidden;
 `;
@@ -76,6 +78,30 @@ function App() {
             element={
               <Layout>
                 <RegistrationThree />
+              </Layout>
+            }
+          />
+          <Route
+            path="/user/certification"
+            element={
+              <Layout>
+                <Certification />
+              </Layout>
+            }
+          />
+          <Route
+            path="/user/result"
+            element={
+              <Layout>
+                <ResultRegistration />
+              </Layout>
+            }
+          />
+          <Route
+            path="/user/account"
+            element={
+              <Layout>
+                <Account />
               </Layout>
             }
           />

@@ -115,7 +115,7 @@ export default function CustomizedMenus() {
         open={open}
         onClose={handleClose}>
         <MenuItem onClick={handleClose} disableRipple>
-          <Li to={'/'}>
+          <Li to={'/user/certification'}>
             <Icon src={peopleAlt1} alt="People" />
             <Title>
               <Typography variant="body1">Tra cứu chứng nhận tiêm</Typography>

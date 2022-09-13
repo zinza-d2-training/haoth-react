@@ -2,13 +2,17 @@ import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import {
   userReducer,
   forgotPasswordReducer,
-  registrationVaccineReducer
+  registrationVaccineReducer,
+  updateInformationReducer,
+  updatePasswordReducer
 } from '../features/user/';
 export const store = configureStore({
   reducer: {
     user: userReducer,
     forgotPassword: forgotPasswordReducer,
-    registrationVaccine: registrationVaccineReducer
+    registrationVaccine: registrationVaccineReducer,
+    updateInformation: updateInformationReducer,
+    updatePassword: updatePasswordReducer
   }
 });
 
