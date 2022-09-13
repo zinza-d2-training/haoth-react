@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import Menu from './Menu';
 import Divider from './Divider';
@@ -40,7 +40,16 @@ const Content = styled.div`
   padding: 0 16px;
   box-sizing: border-box;
 `;
+const Label = styled.label`
+  cursor: pointer;
+  &:hover {
+    padding: 0 4px;
+    border-radius: 50%;
+    background: #e9e9e9;
+  }
+`;
 const Account = () => {
+  const [edit, setEdit] = useState<boolean>(false);
   return (
     <Wrapper>
       <Menu />
@@ -51,10 +60,13 @@ const Account = () => {
             <Typography marginRight={1} variant="body1" fontWeight={500}>
               Thông tin cá nhân
             </Typography>
-            <Edit sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+
+            <Label onClick={() => setEdit(!edit)}>
+              <Edit sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+            </Label>
           </Title>
           <Content>
-            <UpdateInformation />
+            <UpdateInformation edit={edit} />
           </Content>
         </Section>
         <Section>

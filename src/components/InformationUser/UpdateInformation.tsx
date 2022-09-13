@@ -90,7 +90,10 @@ interface IFormData {
   district: string;
   ward: string;
 }
-const UpdateInformation = () => {
+interface EditProps {
+  edit?: boolean;
+}
+const UpdateInformation: React.FC<EditProps> = (props) => {
   const dispatch = useAppDispatch();
   const [user] = useLocalStorage('user', '');
   const [provinceSelect, setProvinceSelect] = useState<IProvince>();
@@ -161,6 +164,15 @@ const UpdateInformation = () => {
       setValue('ward', wardSelect.label);
     }
   }, [wardSelect, setValue]);
+  const handleReset = () => {
+    setValue('name', user?.name);
+    setValue('card', user?.card);
+    setValue('birthday', user?.birthday);
+    setValue('gender', user?.gender);
+    setValue('province', user?.province);
+    setValue('district', user?.district);
+    setValue('ward', user?.ward);
+  };
   const onSubmit: SubmitHandler<IFormData> = (data) => {
     dispatch(updateInformationAsync(data));
     alert('Cap nhat thanh cong');
@@ -173,6 +185,9 @@ const UpdateInformation = () => {
             <Label>Số CMND/CCCD/Mã định danh</Label>
             <FormControl fullWidth>
               <TextField
+                inputProps={{
+                  readOnly: !props.edit
+                }}
                 {...register('card')}
                 error={!!errors.card}
                 helperText={errors.card?.message}
@@ -187,6 +202,9 @@ const UpdateInformation = () => {
             <Label>Họ và tên</Label>
             <FormControl fullWidth>
               <TextField
+                inputProps={{
+                  readOnly: !props.edit
+                }}
                 error={!!errors.name}
                 helperText={errors.name?.message}
                 {...register('name')}
@@ -210,6 +228,7 @@ const UpdateInformation = () => {
                     }}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
+                        readOnly={!props.edit}
                         disableFuture
                         openTo="year"
                         views={['year', 'month', 'day']}
@@ -235,6 +254,7 @@ const UpdateInformation = () => {
                 control={control}
                 render={({ field }) => (
                   <Select
+                    readOnly={!props.edit}
                     size="small"
                     id="gender"
                     defaultValue={'Nam'}
@@ -255,6 +275,7 @@ const UpdateInformation = () => {
             <Label>Tỉnh/Thành phố</Label>
             <FormControl fullWidth>
               <Autocomplete
+                readOnly={!props.edit}
                 disablePortal
                 inputValue={province}
                 options={provinces}
@@ -277,7 +298,7 @@ const UpdateInformation = () => {
             <Label>Quận/Huyện</Label>
             <FormControl fullWidth>
               <Autocomplete
-                readOnly={province === ''}
+                readOnly={!props.edit || province === ''}
                 disablePortal
                 options={districts}
                 inputValue={district}
@@ -301,7 +322,7 @@ const UpdateInformation = () => {
             <FormControl fullWidth>
               <Autocomplete
                 disablePortal
-                readOnly={district === ''}
+                readOnly={!props.edit || district === ''}
                 options={wards}
                 inputValue={ward}
                 onChange={(event, value) => setWardSelect(value as IWard)}
@@ -318,14 +339,16 @@ const UpdateInformation = () => {
             </FormControl>
           </Component>
         </Row>
-        <Row>
-          <Cancel type="reset">
-            <Typography fontWeight={500}>Hủy bỏ</Typography>
-          </Cancel>
-          <Save type="submit">
-            <Typography fontWeight={500}>Lưu</Typography>
-          </Save>
-        </Row>
+        {props.edit && (
+          <Row>
+            <Cancel onClick={handleReset} type="reset">
+              <Typography fontWeight={500}>Hủy bỏ</Typography>
+            </Cancel>
+            <Save type="submit">
+              <Typography fontWeight={500}>Lưu</Typography>
+            </Save>
+          </Row>
+        )}
       </Form>
     </Wrapper>
   );
