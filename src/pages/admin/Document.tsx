@@ -5,13 +5,14 @@ import {
   Dialog,
   DialogContent,
   FormControl,
+  Link,
   Pagination,
   PaginationItem,
   Slide,
   TextField,
   Typography
 } from '@mui/material';
-import { Close, Edit, Search } from '@mui/icons-material';
+import { Close, Download, Edit, Search } from '@mui/icons-material';
 import {
   DataGrid,
   GridColDef,
@@ -21,12 +22,12 @@ import {
   useGridSelector
 } from '@mui/x-data-grid';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { ILocation } from '../../interfaces';
-import { dataLocation } from '../../data/fake';
+import { IDocument, ILocation } from '../../interfaces';
+import { listDocument } from '../../data/fake';
 import { TransitionProps } from '@mui/material/transitions';
-import { NewLocation } from '../../components/Create';
+import { NewDocument } from '../../components/Create';
 import { useAppSelector } from '../../app';
-import { selectLocation } from '../../features/vaccine/locationSlice';
+import { selectDocument } from '../../features/document/documentSlice';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -137,33 +138,42 @@ const columns: GridColDef[] = [
     align: 'center'
   },
   {
-    field: 'name',
-    headerName: 'Tên điểm tiêm',
+    field: 'title',
+    headerName: 'Tên tài liệu',
     minWidth: 400,
     headerAlign: 'center',
     align: 'center'
   },
   {
-    field: 'street',
-    headerName: 'Địa chỉ',
+    field: 'description',
+    headerName: 'Mô tả',
     minWidth: 400,
     headerAlign: 'center',
     align: 'center'
   },
   {
-    field: 'leader',
-    headerName: 'Người đứng đầu cơ sở tiêm chủng',
-    type: 'string',
+    field: 'download',
+    headerName: 'Số lượt tải',
+    type: 'number',
     minWidth: 350,
     headerAlign: 'center',
     align: 'center'
   },
   {
-    field: 'table',
-    headerName: 'Số bàn tiêm',
-    type: 'number',
+    field: 'link',
+    headerName: 'Download',
+    type: 'string',
     headerAlign: 'center',
-    align: 'center'
+    align: 'center',
+    renderCell: (params: any) => {
+      return (
+        <Label>
+          <Link href={params.row.link}>
+            <Download />
+          </Link>
+        </Label>
+      );
+    }
   }
 ];
 function CustomPagination() {
@@ -185,10 +195,10 @@ function CustomPagination() {
 }
 interface IFormEdit {
   id: number;
-  name: string;
-  street: string;
-  leader: string;
-  table: number;
+  title: string;
+  description: string;
+  link: string;
+  download: number;
 }
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -198,36 +208,35 @@ const Transition = React.forwardRef(function Transition(
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-const Location = () => {
-  const newLocation = useAppSelector(selectLocation);
+const Document = () => {
+  const newDocument = useAppSelector(selectDocument);
   const [edit, setEdit] = useState<boolean>(false);
-  const [location, setLocation] = useState<string>('');
-  const [address, setAddress] = useState<string>('');
-  const [rowSelected, setRowSelected] = useState<Partial<ILocation>>();
-  const [listData, setListData] = useState<ILocation[]>(dataLocation);
+  const [titleDocument, setTitleDocument] = useState<string>('');
+  const [rowSelected, setRowSelected] = useState<Partial<IDocument>>();
+  const [listData, setListData] = useState<IDocument[]>(listDocument);
   const [open, setOpen] = React.useState<boolean>(false);
   const { register, handleSubmit, setValue } = useForm<IFormEdit>({
     mode: 'onChange'
   });
   useEffect(() => {
+    if (newDocument) {
+      setListData((prev) => [newDocument, ...prev]);
+    }
+  }, [newDocument]);
+  useEffect(() => {
     setValue('id', rowSelected?.id as number);
-    setValue('name', rowSelected?.name as string);
-    setValue('street', rowSelected?.street as string);
-    setValue('leader', rowSelected?.leader as string);
-    setValue('table', rowSelected?.table as number);
+    setValue('title', rowSelected?.title as string);
+    setValue('description', rowSelected?.description as string);
+    setValue('link', rowSelected?.link as string);
+    setValue('download', rowSelected?.download as number);
   }, [rowSelected, setValue]);
   useEffect(() => {
-    if (newLocation) {
-      setListData((prev) => [newLocation, ...prev]);
+    if (titleDocument === '') {
+      setListData(listDocument);
     }
-  }, [newLocation]);
-  useEffect(() => {
-    if (location === '' && address === '') {
-      setListData(dataLocation);
-    }
-  }, [location, address]);
+  }, [titleDocument]);
 
-  const handleClickOpen = (param: Partial<ILocation>) => {
+  const handleClickOpen = (param: Partial<IDocument>) => {
     setRowSelected(param);
     setOpen(true);
   };
@@ -236,18 +245,14 @@ const Location = () => {
     setOpen(false);
   };
   const onSubmitSearch = () => {
-    const res = dataLocation
-      .filter((item) => {
-        return item.name
-          .toLocaleLowerCase()
-          .includes(location.toLocaleLowerCase());
-      })
-      .filter((item) => {
-        return item.street.includes(address);
-      });
+    const res = listDocument.filter((item) => {
+      return item.title
+        .toLocaleLowerCase()
+        .includes(titleDocument.toLocaleLowerCase());
+    });
     setListData(res);
   };
-  const onUpdateLocation: SubmitHandler<Partial<ILocation>> = (data) => {
+  const onUpdateDocument: SubmitHandler<Partial<IDocument>> = (data) => {
     const result = listData.map((item) => {
       if (item.id === data.id) {
         item = {
@@ -262,24 +267,17 @@ const Location = () => {
   };
   return (
     <Wrapper>
-      <NewLocation />
+      <NewDocument />
       <Container>
         <Row>
           <ComponentInput>
             <FormControl>
               <TextField
-                onChange={(e: any) => setLocation(e.target.value as string)}
+                onChange={(e: any) =>
+                  setTitleDocument(e.target.value as string)
+                }
                 size="small"
-                placeholder="Điểm tiêm"
-              />
-            </FormControl>
-          </ComponentInput>
-          <ComponentInput>
-            <FormControl>
-              <TextField
-                onChange={(e: any) => setAddress(e.target.value as string)}
-                size="small"
-                placeholder="Địa chỉ"
+                placeholder="Tên tài liệu"
               />
             </FormControl>
           </ComponentInput>
@@ -315,12 +313,12 @@ const Location = () => {
               keepMounted
               onClose={handleClose}
               aria-describedby="alert-dialog-slide-description">
-              <Form onSubmit={handleSubmit(onUpdateLocation)}>
+              <Form onSubmit={handleSubmit(onUpdateDocument)}>
                 <DialogContent>
                   <HeaderForm>
                     <Title>
                       <Typography variant="h6" component={'h6'}>
-                        Cập Nhật Điểm Tiêm
+                        Cập nhật tài liệu
                       </Typography>
                       <Label onClick={() => setEdit(!edit)}>
                         <Edit />
@@ -342,41 +340,41 @@ const Location = () => {
                       </FormControl>
                     </Hidden>
                     <Input>
-                      <Typography>Tên điểm tiêm</Typography>
+                      <Typography>Tên tài liệu</Typography>
                       <FormControl fullWidth>
                         <TextField
                           inputProps={{ readOnly: !edit }}
-                          {...register('name')}
+                          {...register('title')}
                           size="small"
                         />
                       </FormControl>
                     </Input>
                     <Input>
-                      <Typography>Địa chỉ</Typography>
+                      <Typography>Mô tả chi tiết</Typography>
                       <FormControl fullWidth>
                         <TextField
                           inputProps={{ readOnly: !edit }}
-                          {...register('street')}
+                          {...register('description')}
                           size="small"
                         />
                       </FormControl>
                     </Input>
                     <Input>
-                      <Typography>Người đứng đầu cơ sở</Typography>
+                      <Typography>Số lượt tải</Typography>
                       <FormControl fullWidth>
                         <TextField
                           inputProps={{ readOnly: !edit }}
-                          {...register('leader')}
+                          {...register('download')}
                           size="small"
                         />
                       </FormControl>
                     </Input>
                     <Input>
-                      <Typography>Số bàn tiêm</Typography>
+                      <Typography>URL</Typography>
                       <FormControl fullWidth>
                         <TextField
                           inputProps={{ readOnly: !edit }}
-                          {...register('table')}
+                          {...register('link')}
                           size="small"
                         />
                       </FormControl>
@@ -402,4 +400,4 @@ const Location = () => {
   );
 };
 
-export default Location;
+export default Document;

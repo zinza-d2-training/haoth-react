@@ -4,6 +4,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Location from './Location';
+import Register from './Register';
+import Document from './Document';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -104,6 +106,12 @@ const Place = () => {
       </Box>
       <TabPanel value={value} index={0}>
         <Location />
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <Register />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        <Document />
       </TabPanel>
     </Wrapper>
   );

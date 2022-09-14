@@ -6,13 +6,17 @@ import {
   updateInformationReducer,
   updatePasswordReducer
 } from '../features/user/';
+import { documentReducer } from '../features/document';
+import { locationReducer } from '../features/vaccine';
 export const store = configureStore({
   reducer: {
     user: userReducer,
     forgotPassword: forgotPasswordReducer,
     registrationVaccine: registrationVaccineReducer,
     updateInformation: updateInformationReducer,
-    updatePassword: updatePasswordReducer
+    updatePassword: updatePasswordReducer,
+    document: documentReducer,
+    location: locationReducer
   }
 });
 

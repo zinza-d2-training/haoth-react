@@ -8,7 +8,8 @@ import {
   IWard,
   IUser,
   IVaccineUsed,
-  IVaccineRegistrationInfo
+  IVaccineRegistrationInfo,
+  IDocument
 } from '../interfaces';
 
 export const listProvinces: IProvince[] = [
@@ -518,7 +519,8 @@ export const listVaccineRegistration: IVaccineRegistrationInfo[] = [
     workplace: 'aaaaaaa',
     address: 'aaaaaa',
     time: Date(),
-    shift: 'Ca sang'
+    shift: 'Ca sang',
+    status: 1
   },
   {
     id: 2,
@@ -529,6 +531,38 @@ export const listVaccineRegistration: IVaccineRegistrationInfo[] = [
     workplace: 'aaaaaaa',
     address: 'aaaaaa',
     time: Date(),
-    shift: 'Ca sang'
+    shift: 'Ca sang',
+    status: 1
+  }
+];
+
+export const listDocument: IDocument[] = [
+  {
+    id: 1,
+    title: 'Danh sách bệnh nhân covid-19',
+    description: 'Mô tả',
+    link: '#',
+    download: 250
+  },
+  {
+    id: 2,
+    title: 'Danh sách bệnh nhân covid-19',
+    description: 'Mô tả',
+    link: '#',
+    download: 250
+  },
+  {
+    id: 3,
+    title: 'Danh sách bệnh nhân covid-19',
+    description: 'Mô tả',
+    link: '#',
+    download: 250
+  },
+  {
+    id: 4,
+    title: 'Danh sách bệnh nhân covid-19',
+    description: 'Mô tả',
+    link: '#',
+    download: 250
   }
 ];

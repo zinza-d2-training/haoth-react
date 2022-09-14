@@ -8,6 +8,7 @@ import {
   Pagination,
   PaginationItem,
   Slide,
+  Stack,
   TextField,
   Typography
 } from '@mui/material';
@@ -18,15 +19,17 @@ import {
   gridPageCountSelector,
   gridPageSelector,
   useGridApiContext,
-  useGridSelector
+  useGridSelector,
+  GridValueGetterParams
 } from '@mui/x-data-grid';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { ILocation } from '../../interfaces';
-import { dataLocation } from '../../data/fake';
+import { IVaccineRegistrationInfo } from '../../interfaces';
+import { listVaccineRegistration } from '../../data/fake';
 import { TransitionProps } from '@mui/material/transitions';
-import { NewLocation } from '../../components/Create';
-import { useAppSelector } from '../../app';
-import { selectLocation } from '../../features/vaccine/locationSlice';
+import { fetchUser } from '../../features/user/userAPI';
+import { formatDate } from '../../utils/formatTime';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -132,38 +135,69 @@ const columns: GridColDef[] = [
   {
     field: 'id',
     headerName: 'STT',
-    width: 100,
+    width: 60,
     headerAlign: 'center',
     align: 'center'
   },
   {
     field: 'name',
-    headerName: 'Tên điểm tiêm',
-    minWidth: 400,
+    headerName: 'Họ và tên',
+    minWidth: 200,
     headerAlign: 'center',
-    align: 'center'
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => params.row.infoUser.name
   },
   {
-    field: 'street',
-    headerName: 'Địa chỉ',
-    minWidth: 400,
+    field: 'birthday',
+    headerName: 'Ngày sinh',
+    minWidth: 150,
     headerAlign: 'center',
-    align: 'center'
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) =>
+      formatDate(params.row.infoUser.birthday)
   },
   {
-    field: 'leader',
-    headerName: 'Người đứng đầu cơ sở tiêm chủng',
+    field: 'cardInsurance',
+    headerName: 'Số CMND/CCCD/Mã định danh công dân',
     type: 'string',
-    minWidth: 350,
+    minWidth: 200,
     headerAlign: 'center',
     align: 'center'
   },
   {
-    field: 'table',
-    headerName: 'Số bàn tiêm',
-    type: 'number',
+    field: 'address',
+    headerName: 'Địa chỉ',
+    type: 'string',
+    minWidth: 200,
     headerAlign: 'center',
     align: 'center'
+  },
+  {
+    field: 'time',
+    headerName: 'Ngày đăng kí tiêm',
+    minWidth: 200,
+    type: 'string',
+    headerAlign: 'center',
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => formatDate(params.row.time)
+  },
+  {
+    field: 'shift',
+    headerName: 'Buổi tiêm',
+    type: 'string',
+    minWidth: 200,
+    headerAlign: 'center',
+    align: 'center'
+  },
+  {
+    field: 'status',
+    headerName: 'Trạng thái',
+    type: 'string',
+    minWidth: 200,
+    headerAlign: 'center',
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) =>
+      params.row.status === 1 ? 'Thành công' : 'Thất bại'
   }
 ];
 function CustomPagination() {
@@ -186,9 +220,11 @@ function CustomPagination() {
 interface IFormEdit {
   id: number;
   name: string;
-  street: string;
-  leader: string;
-  table: number;
+  birthday: string;
+  cardInsurance: string;
+  address: string;
+  time: string;
+  shift: string;
 }
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -198,36 +234,47 @@ const Transition = React.forwardRef(function Transition(
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-const Location = () => {
-  const newLocation = useAppSelector(selectLocation);
+const Register = () => {
   const [edit, setEdit] = useState<boolean>(false);
-  const [location, setLocation] = useState<string>('');
+  const [name, setName] = useState<string>('');
   const [address, setAddress] = useState<string>('');
-  const [rowSelected, setRowSelected] = useState<Partial<ILocation>>();
-  const [listData, setListData] = useState<ILocation[]>(dataLocation);
+  const [rowSelected, setRowSelected] =
+    useState<Partial<IVaccineRegistrationInfo>>();
+  const [initData, setInitData] = useState<IVaccineRegistrationInfo[]>();
+  const [listData, setListData] = useState<IVaccineRegistrationInfo[]>();
   const [open, setOpen] = React.useState<boolean>(false);
-  const { register, handleSubmit, setValue } = useForm<IFormEdit>({
+  const { watch, register, handleSubmit, setValue } = useForm<IFormEdit>({
     mode: 'onChange'
   });
   useEffect(() => {
+    const res = listVaccineRegistration.map((item) => {
+      const info = fetchUser(item?.userId);
+      item = {
+        ...item,
+        infoUser: info
+      };
+      return item;
+    }) as IVaccineRegistrationInfo[];
+    setListData(res);
+    setInitData(res);
+  }, []);
+  useEffect(() => {
     setValue('id', rowSelected?.id as number);
-    setValue('name', rowSelected?.name as string);
-    setValue('street', rowSelected?.street as string);
-    setValue('leader', rowSelected?.leader as string);
-    setValue('table', rowSelected?.table as number);
+    setValue('name', rowSelected?.infoUser?.name as string);
+    setValue('address', rowSelected?.address as string);
+    setValue('cardInsurance', rowSelected?.cardInsurance as string);
+    setValue('time', formatDate(rowSelected?.time as string) as string);
+    setValue('birthday', formatDate(rowSelected?.infoUser?.birthday as string));
   }, [rowSelected, setValue]);
   useEffect(() => {
-    if (newLocation) {
-      setListData((prev) => [newLocation, ...prev]);
+    if (initData) {
+      if (name === '' && address === '') {
+        setListData(initData);
+      }
     }
-  }, [newLocation]);
-  useEffect(() => {
-    if (location === '' && address === '') {
-      setListData(dataLocation);
-    }
-  }, [location, address]);
+  }, [name, address, initData]);
 
-  const handleClickOpen = (param: Partial<ILocation>) => {
+  const handleClickOpen = (param: Partial<IVaccineRegistrationInfo>) => {
     setRowSelected(param);
     setOpen(true);
   };
@@ -236,19 +283,21 @@ const Location = () => {
     setOpen(false);
   };
   const onSubmitSearch = () => {
-    const res = dataLocation
-      .filter((item) => {
-        return item.name
-          .toLocaleLowerCase()
-          .includes(location.toLocaleLowerCase());
-      })
-      .filter((item) => {
-        return item.street.includes(address);
-      });
-    setListData(res);
+    if (initData) {
+      const res = initData
+        .filter((item) => {
+          return item.infoUser?.name?.includes(name);
+        })
+        .filter((item) => {
+          return item.address.includes(address);
+        });
+      setListData(res);
+    }
   };
-  const onUpdateLocation: SubmitHandler<Partial<ILocation>> = (data) => {
-    const result = listData.map((item) => {
+  const onUpdateSubmit: SubmitHandler<Partial<IVaccineRegistrationInfo>> = (
+    data
+  ) => {
+    const result = listData?.map((item) => {
       if (item.id === data.id) {
         item = {
           ...item,
@@ -262,24 +311,23 @@ const Location = () => {
   };
   return (
     <Wrapper>
-      <NewLocation />
       <Container>
         <Row>
-          <ComponentInput>
-            <FormControl>
-              <TextField
-                onChange={(e: any) => setLocation(e.target.value as string)}
-                size="small"
-                placeholder="Điểm tiêm"
-              />
-            </FormControl>
-          </ComponentInput>
           <ComponentInput>
             <FormControl>
               <TextField
                 onChange={(e: any) => setAddress(e.target.value as string)}
                 size="small"
                 placeholder="Địa chỉ"
+              />
+            </FormControl>
+          </ComponentInput>
+          <ComponentInput>
+            <FormControl>
+              <TextField
+                onChange={(e: any) => setName(e.target.value as string)}
+                size="small"
+                placeholder="Tên người đăng kí"
               />
             </FormControl>
           </ComponentInput>
@@ -294,11 +342,11 @@ const Location = () => {
           <DataGrid
             disableColumnMenu
             onRowClick={(param) =>
-              handleClickOpen(param.row as Partial<ILocation>)
+              handleClickOpen(param.row as Partial<IVaccineRegistrationInfo>)
             }
             autoPageSize
             autoHeight
-            rows={listData}
+            rows={listData || []}
             columns={columns}
             pageSize={10}
             rowsPerPageOptions={[10]}
@@ -315,12 +363,12 @@ const Location = () => {
               keepMounted
               onClose={handleClose}
               aria-describedby="alert-dialog-slide-description">
-              <Form onSubmit={handleSubmit(onUpdateLocation)}>
+              <Form onSubmit={handleSubmit(onUpdateSubmit)}>
                 <DialogContent>
                   <HeaderForm>
                     <Title>
                       <Typography variant="h6" component={'h6'}>
-                        Cập Nhật Điểm Tiêm
+                        Cập Nhật Thông Tin
                       </Typography>
                       <Label onClick={() => setEdit(!edit)}>
                         <Edit />
@@ -342,11 +390,31 @@ const Location = () => {
                       </FormControl>
                     </Hidden>
                     <Input>
-                      <Typography>Tên điểm tiêm</Typography>
+                      <Typography>Tên người đăng kí</Typography>
+                      <FormControl fullWidth>
+                        <TextField
+                          inputProps={{ readOnly: true }}
+                          {...register('name')}
+                          size="small"
+                        />
+                      </FormControl>
+                    </Input>
+                    <Input>
+                      <Typography>Ngày sinh</Typography>
+                      <FormControl fullWidth>
+                        <TextField
+                          inputProps={{ readOnly: true }}
+                          {...register('birthday')}
+                          size="small"
+                        />
+                      </FormControl>
+                    </Input>
+                    <Input>
+                      <Typography>Số CMND/CCCD</Typography>
                       <FormControl fullWidth>
                         <TextField
                           inputProps={{ readOnly: !edit }}
-                          {...register('name')}
+                          {...register('cardInsurance')}
                           size="small"
                         />
                       </FormControl>
@@ -356,29 +424,39 @@ const Location = () => {
                       <FormControl fullWidth>
                         <TextField
                           inputProps={{ readOnly: !edit }}
-                          {...register('street')}
+                          {...register('address')}
                           size="small"
                         />
                       </FormControl>
                     </Input>
                     <Input>
-                      <Typography>Người đứng đầu cơ sở</Typography>
+                      <Typography>Thời gian đăng kí</Typography>
                       <FormControl fullWidth>
-                        <TextField
-                          inputProps={{ readOnly: !edit }}
-                          {...register('leader')}
-                          size="small"
-                        />
-                      </FormControl>
-                    </Input>
-                    <Input>
-                      <Typography>Số bàn tiêm</Typography>
-                      <FormControl fullWidth>
-                        <TextField
-                          inputProps={{ readOnly: !edit }}
-                          {...register('table')}
-                          size="small"
-                        />
+                        <Stack
+                          sx={{
+                            width: '100%',
+                            textAlign: 'left'
+                          }}>
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                              InputProps={{
+                                size: 'small'
+                              }}
+                              readOnly={!edit}
+                              disablePast
+                              openTo="year"
+                              views={['year', 'month', 'day']}
+                              {...register('time')}
+                              value={watch('time')}
+                              onChange={(date: any) => {
+                                setValue('time', date.$d);
+                              }}
+                              renderInput={(params: any) => {
+                                return <TextField {...params} />;
+                              }}
+                            />
+                          </LocalizationProvider>
+                        </Stack>
                       </FormControl>
                     </Input>
                   </BodyForm>
@@ -402,4 +480,4 @@ const Location = () => {
   );
 };
 
-export default Location;
+export default Register;

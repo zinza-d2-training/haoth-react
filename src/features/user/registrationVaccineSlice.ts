@@ -28,7 +28,8 @@ const initialState: IVaccineRegistrationState = {
     workplace: '',
     address: '',
     time: '',
-    shift: ''
+    shift: '',
+    status: 1
   },
   status: 'idle',
   loading: false
