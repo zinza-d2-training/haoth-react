@@ -33,9 +33,9 @@ export interface ILocation {
   id: number;
   name: string;
   street: string;
-  ward: string;
-  district: string;
-  province: string;
+  ward?: string;
+  district?: string;
+  province?: string;
   leader: string;
   table: number;
 }
@@ -62,6 +62,8 @@ export interface IVaccineRegistrationInfo {
   address: string;
   time: string;
   shift: string;
+  infoUser?: Partial<IUser>;
+  status: number;
 }
 export interface IUser {
   id: string;
@@ -84,4 +86,12 @@ export interface IVaccineUsed {
   time: string;
   location: string;
   numberInjection: number;
+}
+
+export interface IDocument {
+  id: number;
+  title: string;
+  description?: string;
+  link: string;
+  download: number;
 }

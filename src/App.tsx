@@ -19,6 +19,7 @@ import {
   RegistrationThree
 } from './pages/vaccine-registration';
 import { Account, Certification, ResultRegistration } from './pages/user';
+import { Place } from './pages/admin';
 
 const Wrapper = styled.div`
   overflow-x: hidden;
@@ -102,6 +103,14 @@ function App() {
             element={
               <Layout>
                 <Account />
+              </Layout>
+            }
+          />
+          <Route
+            path="/admin/place"
+            element={
+              <Layout>
+                <Place />
               </Layout>
             }
           />
