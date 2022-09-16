@@ -22,6 +22,8 @@ import {
   useGridSelector
 } from '@mui/x-data-grid';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { IDocument, ILocation } from '../../interfaces';
 import { listDocument } from '../../data/fake';
 import { TransitionProps } from '@mui/material/transitions';
@@ -200,6 +202,15 @@ interface IFormEdit {
   link: string;
   download: number;
 }
+const schema = yup
+  .object({
+    title: yup.string().required('Tên tài liệu không được để trống').trim(),
+    link: yup.string().required('Link tài liệu không được để trống').trim(),
+    download: yup.string()
+    .required()
+    .matches(/^[0-9]+$/, 'Số lượt tải phải là dạng số ')
+  })
+.required();
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -215,7 +226,8 @@ const Document = () => {
   const [rowSelected, setRowSelected] = useState<Partial<IDocument>>();
   const [listData, setListData] = useState<IDocument[]>(listDocument);
   const [open, setOpen] = React.useState<boolean>(false);
-  const { register, handleSubmit, setValue } = useForm<IFormEdit>({
+  const { register, handleSubmit, setValue, formState:{isValid,errors} } = useForm<IFormEdit>({
+    resolver: yupResolver(schema),
     mode: 'onChange'
   });
   useEffect(() => {
@@ -343,6 +355,8 @@ const Document = () => {
                       <Typography>Tên tài liệu</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.title}
+                          helperText={errors.title?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('title')}
                           size="small"
@@ -363,6 +377,8 @@ const Document = () => {
                       <Typography>Số lượt tải</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.download}
+                          helperText={errors.download?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('download')}
                           size="small"
@@ -373,6 +389,8 @@ const Document = () => {
                       <Typography>URL</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.link}
+                          helperText={errors.link?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('link')}
                           size="small"
@@ -385,7 +403,7 @@ const Document = () => {
                       <Cancel onClick={handleClose}>
                         <Typography fontWeight={500}>Hủy bỏ</Typography>
                       </Cancel>
-                      <Save type="submit">
+                      <Save disabled={!isValid} type="submit">
                         <Typography fontWeight={500}>Xác nhận</Typography>
                       </Save>
                     </FooterForm>

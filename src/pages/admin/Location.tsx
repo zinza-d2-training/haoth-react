@@ -21,6 +21,8 @@ import {
   useGridSelector
 } from '@mui/x-data-grid';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { ILocation } from '../../interfaces';
 import { dataLocation } from '../../data/fake';
 import { TransitionProps } from '@mui/material/transitions';
@@ -190,6 +192,18 @@ interface IFormEdit {
   leader: string;
   table: number;
 }
+const schema = yup
+  .object({
+    name: yup.string().required('Tên địa điểm không được để trống'),
+    street: yup.string().required('Địa chỉ không được để trống'),
+    leader: yup.string().required('Tên quản lí không được để trống'),
+    table: yup
+      .string()
+      .required()
+      .min(1, 'Bàn tiêm phải lớn hơn 0')
+      .matches(/^[0-9]+$/, 'Bàn tiêm phải là dạng số ')
+  })
+  .required();
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -206,8 +220,9 @@ const Location = () => {
   const [rowSelected, setRowSelected] = useState<Partial<ILocation>>();
   const [listData, setListData] = useState<ILocation[]>(dataLocation);
   const [open, setOpen] = React.useState<boolean>(false);
-  const { register, handleSubmit, setValue } = useForm<IFormEdit>({
-    mode: 'onChange'
+  const { register, handleSubmit, setValue,formState:{isValid,errors} } = useForm<IFormEdit>({
+    resolver: yupResolver(schema),
+    mode: 'onChange',
   });
   useEffect(() => {
     setValue('id', rowSelected?.id as number);
@@ -345,6 +360,8 @@ const Location = () => {
                       <Typography>Tên điểm tiêm</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.name}
+                          helperText={errors.name?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('name')}
                           size="small"
@@ -355,6 +372,8 @@ const Location = () => {
                       <Typography>Địa chỉ</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.street}
+                          helperText={errors.street?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('street')}
                           size="small"
@@ -365,6 +384,8 @@ const Location = () => {
                       <Typography>Người đứng đầu cơ sở</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.leader}
+                          helperText={errors.leader?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('leader')}
                           size="small"
@@ -375,6 +396,8 @@ const Location = () => {
                       <Typography>Số bàn tiêm</Typography>
                       <FormControl fullWidth>
                         <TextField
+                          error={!!errors.table}
+                          helperText={errors.table?.message}
                           inputProps={{ readOnly: !edit }}
                           {...register('table')}
                           size="small"
@@ -387,7 +410,7 @@ const Location = () => {
                       <Cancel onClick={handleClose}>
                         <Typography fontWeight={500}>Hủy bỏ</Typography>
                       </Cancel>
-                      <Save type="submit">
+                      <Save disabled={!isValid} type="submit">
                         <Typography fontWeight={500}>Xác nhận</Typography>
                       </Save>
                     </FooterForm>
