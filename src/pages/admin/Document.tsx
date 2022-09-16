@@ -206,11 +206,12 @@ const schema = yup
   .object({
     title: yup.string().required('Tên tài liệu không được để trống').trim(),
     link: yup.string().required('Link tài liệu không được để trống').trim(),
-    download: yup.string()
-    .required()
-    .matches(/^[0-9]+$/, 'Số lượt tải phải là dạng số ')
+    download: yup
+      .string()
+      .required()
+      .matches(/^[0-9]+$/, 'Số lượt tải phải là dạng số ')
   })
-.required();
+  .required();
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -226,7 +227,12 @@ const Document = () => {
   const [rowSelected, setRowSelected] = useState<Partial<IDocument>>();
   const [listData, setListData] = useState<IDocument[]>(listDocument);
   const [open, setOpen] = React.useState<boolean>(false);
-  const { register, handleSubmit, setValue, formState:{isValid,errors} } = useForm<IFormEdit>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { isValid, errors }
+  } = useForm<IFormEdit>({
     resolver: yupResolver(schema),
     mode: 'onChange'
   });

@@ -220,9 +220,14 @@ const Location = () => {
   const [rowSelected, setRowSelected] = useState<Partial<ILocation>>();
   const [listData, setListData] = useState<ILocation[]>(dataLocation);
   const [open, setOpen] = React.useState<boolean>(false);
-  const { register, handleSubmit, setValue,formState:{isValid,errors} } = useForm<IFormEdit>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { isValid, errors }
+  } = useForm<IFormEdit>({
     resolver: yupResolver(schema),
-    mode: 'onChange',
+    mode: 'onChange'
   });
   useEffect(() => {
     setValue('id', rowSelected?.id as number);
