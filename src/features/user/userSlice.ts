@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import { fetchLogin, InfoUser } from './userAPI';
 import { saveLocalStorage } from '../../utils/localStorage';
+import * as authService from '../../services/authService';
+import { IUser, IUserLogin } from '../../interfaces/interface';
 export interface UserState {
-  info?: InfoUser;
+  info?: Partial<IUser>;
   token?: string;
   isFetching: boolean;
   error: boolean;
@@ -16,8 +17,8 @@ const initialState: UserState = {
 };
 export const loginAsync = createAsyncThunk(
   'user/fetchLogin',
-  async (payload: InfoUser) => {
-    const response = await fetchLogin(payload);
+  async (payload: IUserLogin) => {
+    const response = await authService.login(payload);
     return response.data;
   }
 );
