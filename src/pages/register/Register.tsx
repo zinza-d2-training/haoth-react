@@ -113,9 +113,9 @@ const schema = yup
       .matches(/^[0-9]+$/, 'CMND phải là dạng số ')
       .matches(/^(\d{9}|\d{12})$/, 'CMND chỉ chứa 9 hoặc 12 số'),
     gender: yup.number().required(),
-    provinceId: yup.number().required(),
-    districtId: yup.number().required(),
-    wardId: yup.number().required()
+    provinceId: yup.number().min(1).required(),
+    districtId: yup.number().min(1).required(),
+    wardId: yup.number().min(1).required()
   })
   .required();
 
@@ -137,9 +137,9 @@ const Register = () => {
     defaultValues: {
       gender: 0,
       birthday: format(Date()),
-      provinceId: NaN,
-      districtId: NaN,
-      wardId: NaN
+      provinceId: 0,
+      districtId: 0,
+      wardId: 0
     }
   });
   const provinceId = watch('provinceId');
@@ -149,9 +149,7 @@ const Register = () => {
   useEffect(() => {
     const fetchProvinces = async () => {
       const res = await areaService.findAllProvinces();
-      if (res.status === 200) {
-        setProvinces(res.data);
-      }
+      setProvinces(res);
     };
     fetchProvinces();
   }, []);
@@ -159,43 +157,40 @@ const Register = () => {
     if (!!provinceId) {
       const fetchDistricts = async () => {
         const res = await areaService.findDistricts(provinceId);
-        if (res.status === 200) {
-          setDistricts(res.data);
-        }
+        setValue('districtId', 0);
+        setValue('wardId', 0);
+        setDistricts(res);
       };
       fetchDistricts();
     }
-  }, [provinceId]);
+  }, [provinceId, setValue]);
   useEffect(() => {
     if (!!districtId) {
       const fetchWards = async () => {
         const res = await areaService.findWards(districtId);
-        if (res.status === 200) {
-          setWards(res.data);
-        }
+        setValue('wardId', 0);
+        setWards(res);
       };
       fetchWards();
     }
-  }, [districtId]);
+  }, [districtId, setValue]);
   const resetForm = () => {
     setValue('identifyCard', '');
     setValue('name', '');
     setValue('email', '');
     setValue('password', '');
-    setValue('districtId', NaN);
-    setValue('provinceId', NaN);
-    setValue('wardId', NaN);
+    setValue('districtId', 0);
+    setValue('provinceId', 0);
+    setValue('wardId', 0);
   };
   const onSubmit: SubmitHandler<IFormData> = async (data) => {
     const { provinceId, districtId, ...rest } = data;
     const register = await authService.register(rest);
-    if (register.status === 201) {
+    if (!!register) {
       resetForm();
       setTimeout(() => {
         navigate('/login');
       }, 1000);
-    } else {
-      alert('Dang ky that bai');
     }
   };
   return (

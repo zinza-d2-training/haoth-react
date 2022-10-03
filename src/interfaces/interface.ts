@@ -28,6 +28,11 @@ export interface IUserRegister {
   wardId: number;
 }
 
+export interface IResponseLogin {
+  user: Partial<IUser>;
+  token: string;
+}
+
 export interface IProvince {
   id: number;
   name: string;

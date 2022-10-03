@@ -1,20 +1,13 @@
-import { IUserLogin, IUserRegister } from '../interfaces/interface';
-import httpRequest from '../utils/request/httpRequest';
+import { IUser, IUserRegister } from '../interfaces/interface';
+import { axioInstance } from '../utils/request/httpRequest';
 
-export const register = async (data: IUserRegister) => {
+export const register = async (
+  data: IUserRegister
+): Promise<Partial<IUser> | unknown> => {
   try {
-    const res = await httpRequest.post('auth/register', data);
-    return res;
-  } catch (error) {
-    throw new Error();
-  }
-};
-
-export const login = async (data: IUserLogin) => {
-  try {
-    const res = await httpRequest.post('auth/login', data);
-    return res;
-  } catch (error) {
-    throw new Error();
+    const res = await axioInstance.post('auth/register', data);
+    return res.data;
+  } catch (error: any) {
+    alert(error.response.data.message);
   }
 };
