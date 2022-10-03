@@ -22,7 +22,10 @@ export const loginAsync = createAsyncThunk(
     { rejectWithValue }
   ): Promise<IResponseLogin | unknown> => {
     try {
-      const response = await axioInstance.post<IResponseLogin>('auth/login', payload);
+      const response = await axioInstance.post<IResponseLogin>(
+        'auth/login',
+        payload
+      );
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response.data.message);
