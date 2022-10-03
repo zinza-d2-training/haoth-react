@@ -18,8 +18,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Background } from '../../assets/images';
-import { listProvinces, listDistricts, listWards } from '../../data/fake';
-import { IDistrict, IProvince, IWard } from '../../interfaces';
+import { IDistrict, IProvince, IWard } from '../../interfaces/interface';
+import { format } from '../../utils/formatTime';
+import * as areaService from '../../services/areaService';
+import * as authService from '../../services/authService';
 const Wrapper = styled.div`
   width: 100vw;
   height: 100vh;
@@ -84,15 +86,15 @@ const DialogActions = styled.div`
 `;
 
 interface IFormData {
-  card: string;
+  name: string;
   email: string;
   password: string;
-  fullName: string;
-  birthday: string;
-  gender: string;
-  province: string;
-  district: string;
-  ward: string;
+  identifyCard: string;
+  birthday: Date;
+  gender: number;
+  provinceId: number;
+  districtId: number;
+  wardId: number;
 }
 
 const schema = yup
@@ -103,17 +105,17 @@ const schema = yup
       .min(8)
       .required('Mật khẩu dài ít nhất 8 kí tự')
       .trim(),
-    fullName: yup.string().required('Tên không được để trống').trim(),
+    name: yup.string().required('Tên không được để trống').trim(),
     birthday: yup.string().required().trim(),
-    card: yup
+    identifyCard: yup
       .string()
       .required('CCCD là bắt buộc')
       .matches(/^[0-9]+$/, 'CMND phải là dạng số ')
       .matches(/^(\d{9}|\d{12})$/, 'CMND chỉ chứa 9 hoặc 12 số'),
-    gender: yup.string().required(),
-    province: yup.string().required().trim(),
-    district: yup.string().required().trim(),
-    ward: yup.string().required().trim()
+    gender: yup.number().required(),
+    provinceId: yup.number().min(1).required(),
+    districtId: yup.number().min(1).required(),
+    wardId: yup.number().min(1).required()
   })
   .required();
 
@@ -133,54 +135,63 @@ const Register = () => {
     resolver: yupResolver(schema),
     mode: 'onChange',
     defaultValues: {
-      gender: 'Nam',
-      birthday: Date(),
-      province: '',
-      district: '',
-      ward: ''
+      gender: 0,
+      birthday: format(Date()),
+      provinceId: 0,
+      districtId: 0,
+      wardId: 0
     }
   });
-  const province = watch('province');
-  const district = watch('district');
-  const ward = watch('ward');
+  const provinceId = watch('provinceId');
+  const districtId = watch('districtId');
+  const wardId = watch('wardId');
   //Get Districts when select province
   useEffect(() => {
-    setProvinces(listProvinces);
+    const fetchProvinces = async () => {
+      const res = await areaService.findAllProvinces();
+      setProvinces(res);
+    };
+    fetchProvinces();
   }, []);
   useEffect(() => {
-    if (!!province) {
-      setValue('district', '');
-      setValue('ward', '');
-      setDistricts([]);
-      setWards([]);
-      const code = Number(province.split('/')[0]);
-      const data = listDistricts.filter(
-        (item: IDistrict) => item.province_code === code
-      );
-      setDistricts(data);
+    if (!!provinceId) {
+      const fetchDistricts = async () => {
+        const res = await areaService.findDistricts(provinceId);
+        setValue('districtId', 0);
+        setValue('wardId', 0);
+        setDistricts(res);
+      };
+      fetchDistricts();
     }
-  }, [province, setValue]);
+  }, [provinceId, setValue]);
   useEffect(() => {
-    if (!!district) {
-      setValue('ward', '');
-      setWards([]);
-      const code = Number(district.split('/')[0]);
-      const data = listWards.filter(
-        (item: IWard) => item.district_code === code
-      );
-      setWards(data);
+    if (!!districtId) {
+      const fetchWards = async () => {
+        const res = await areaService.findWards(districtId);
+        setValue('wardId', 0);
+        setWards(res);
+      };
+      fetchWards();
     }
-  }, [district, setValue]);
-  const onSubmit: SubmitHandler<IFormData> = (data) => {
-    data.province = data.province.split('/')[1];
-    data.district = data.district.split('/')[1];
-    const fetchRegister = async () => {
-      await setTimeout(() => {
-        alert('Dang ki thanh cong');
+  }, [districtId, setValue]);
+  const resetForm = () => {
+    setValue('identifyCard', '');
+    setValue('name', '');
+    setValue('email', '');
+    setValue('password', '');
+    setValue('districtId', 0);
+    setValue('provinceId', 0);
+    setValue('wardId', 0);
+  };
+  const onSubmit: SubmitHandler<IFormData> = async (data) => {
+    const { provinceId, districtId, ...rest } = data;
+    const register = await authService.register(rest);
+    if (!!register) {
+      resetForm();
+      setTimeout(() => {
         navigate('/login');
-      }, 2000);
-    };
-    fetchRegister();
+      }, 1000);
+    }
   };
   return (
     <Wrapper>
@@ -215,9 +226,9 @@ const Register = () => {
                 <TextField
                   inputProps={{ style: { height: '33px' } }}
                   size="small"
-                  {...register('card')}
-                  error={!!errors.card}
-                  helperText={errors.card?.message}
+                  {...register('identifyCard')}
+                  error={!!errors.identifyCard}
+                  helperText={errors.identifyCard?.message}
                   placeholder="CMND/CCCD"
                   sx={{ width: '400px' }}
                 />
@@ -287,12 +298,11 @@ const Register = () => {
                 <TextField
                   inputProps={{ style: { height: '33px' } }}
                   size="small"
-                  {...register('fullName')}
-                  error={!!errors.fullName}
-                  helperText={errors.fullName?.message}
+                  {...register('name')}
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
                   id="fullName"
                   placeholder="Ho va ten"
-                  name="fullName"
                   sx={{ width: '400px' }}
                 />
               </FormControl>
@@ -329,7 +339,7 @@ const Register = () => {
                           views={['year', 'month', 'day']}
                           value={field.value || Date()}
                           onChange={(date: any) => {
-                            field.onChange(date ? date : '');
+                            field.onChange(date ? format(date) : null);
                           }}
                           renderInput={(params: any) => {
                             return <TextField {...params} />;
@@ -361,13 +371,14 @@ const Register = () => {
                     <Select
                       id="gender"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
-                      defaultValue={'Nam'}
+                      defaultValue={0}
                       {...field}
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      <MenuItem value={'Nam'}>Nam</MenuItem>
-                      <MenuItem value={'Nữ'}>Nữ</MenuItem>
+                      <MenuItem value={0}>Nam</MenuItem>
+                      <MenuItem value={1}>Nữ</MenuItem>
+                      <MenuItem value={2}>Others</MenuItem>
                     </Select>
                   )}
                 />
@@ -388,23 +399,21 @@ const Register = () => {
               </Label>
               <FormControl>
                 <Controller
-                  {...register('province')}
+                  {...register('provinceId')}
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <Select
-                      error={!!errors.province}
+                      error={!!errors.provinceId}
                       size="small"
                       id="province"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
-                      defaultValue={province}
+                      defaultValue={provinceId}
                       {...field}
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      {provinces.map((province: IProvince) => (
-                        <MenuItem
-                          key={province.code}
-                          value={`${province.code}/${province.name}`}>
+                      {provinces.map((province: IProvince, index) => (
+                        <MenuItem key={index} value={province.id}>
                           {province.name}
                         </MenuItem>
                       ))}
@@ -427,23 +436,21 @@ const Register = () => {
               </Label>
               <FormControl>
                 <Controller
-                  {...register('district')}
+                  {...register('districtId')}
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <Select
-                      error={!!errors.district}
+                      error={!!errors.districtId}
                       size="small"
                       id="district"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
-                      defaultValue={district}
+                      defaultValue={districtId}
                       {...field}
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      {districts.map((district: IDistrict) => (
-                        <MenuItem
-                          key={district.code}
-                          value={`${district.code}/${district.name}`}>
+                      {districts.map((district: IDistrict, index) => (
+                        <MenuItem key={index} value={district.id}>
                           {district.name}
                         </MenuItem>
                       ))}
@@ -466,21 +473,21 @@ const Register = () => {
               </Label>
               <FormControl>
                 <Controller
-                  {...register('ward')}
+                  {...register('wardId')}
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <Select
-                      error={!!errors.ward}
+                      error={!!errors.wardId}
                       size="small"
                       id="ward"
                       sx={{ width: '400px', height: '50px', textAlign: 'left' }}
-                      defaultValue={ward}
+                      defaultValue={wardId}
                       {...field}
                       onChange={(event) => {
                         field.onChange(event.target.value);
                       }}>
-                      {wards.map((ward: IWard) => (
-                        <MenuItem key={ward.code} value={ward.name}>
+                      {wards.map((ward: IWard, index) => (
+                        <MenuItem key={index} value={ward.id}>
                           {ward.name}
                         </MenuItem>
                       ))}

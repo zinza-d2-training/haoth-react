@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import { fetchLogin, InfoUser } from './userAPI';
 import { saveLocalStorage } from '../../utils/localStorage';
+import { IResponseLogin, IUser, IUserLogin } from '../../interfaces/interface';
+import { axioInstance } from '../../utils/request/httpRequest';
 export interface UserState {
-  info?: InfoUser;
+  info?: Partial<IUser>;
   token?: string;
   isFetching: boolean;
   error: boolean;
@@ -16,9 +17,19 @@ const initialState: UserState = {
 };
 export const loginAsync = createAsyncThunk(
   'user/fetchLogin',
-  async (payload: InfoUser) => {
-    const response = await fetchLogin(payload);
-    return response.data;
+  async (
+    payload: IUserLogin,
+    { rejectWithValue }
+  ): Promise<IResponseLogin | unknown> => {
+    try {
+      const response = await axioInstance.post<IResponseLogin>(
+        'auth/login',
+        payload
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response.data.message);
+    }
   }
 );
 
@@ -32,7 +43,7 @@ export const UserSlice = createSlice({
         state.isFetching = true;
         state.error = false;
       })
-      .addCase(loginAsync.fulfilled, (state, action) => {
+      .addCase(loginAsync.fulfilled, (state, action: any) => {
         saveLocalStorage('token', action.payload.token);
         saveLocalStorage('user', action.payload.user);
         state.error = false;
