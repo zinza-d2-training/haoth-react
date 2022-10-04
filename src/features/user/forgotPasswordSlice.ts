@@ -18,7 +18,10 @@ interface IPayload {
 
 export const forgotPasswordAsync = createAsyncThunk(
   'user/forgotPassword',
-  async (payload: IPayload, { rejectWithValue }):Promise<{ message: string }| unknown> => {
+  async (
+    payload: IPayload,
+    { rejectWithValue }
+  ): Promise<{ message: string } | unknown> => {
     try {
       const res = await axioInstance.post<{ message: string }>(
         'forgot-password',
