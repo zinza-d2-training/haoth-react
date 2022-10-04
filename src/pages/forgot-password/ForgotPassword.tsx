@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -9,10 +9,10 @@ import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app';
 import {
   forgotPasswordAsync,
+  resetDefault,
   selectLoading,
   selectState
 } from '../../features/user/forgotPasswordSlice';
-import { useNavigate } from 'react-router-dom';
 import { Background } from '../../assets/images';
 
 type FormData = {
@@ -93,23 +93,28 @@ const To = styled(Link)`
 `;
 
 const ForgotPassword = () => {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const stateForgot = useAppSelector(selectState);
   const isLoading = useAppSelector(selectLoading);
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isValid }
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     mode: 'onChange'
   });
+  useEffect(() => {
+    dispatch(resetDefault());
+  }, [dispatch]);
+  useEffect(() => {
+    if (stateForgot.status === 'succeeded') {
+      setValue('email', '');
+    }
+  }, [stateForgot.status, setValue]);
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    dispatch(forgotPasswordAsync(data.email));
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
+    dispatch(forgotPasswordAsync(data));
   };
   return (
     <Wrapper>
@@ -158,6 +163,11 @@ const ForgotPassword = () => {
             </FormControl>
             {stateForgot.status === 'failed' && (
               <Typography sx={{ color: 'red', padding: '5px 0' }}>
+                {stateForgot.message}
+              </Typography>
+            )}
+            {stateForgot.status === 'succeeded' && (
+              <Typography sx={{ color: 'green', padding: '5px 0' }}>
                 {stateForgot.message}
               </Typography>
             )}
