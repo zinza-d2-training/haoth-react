@@ -15,19 +15,18 @@ const initialState: ForgotState = {
 interface IPayload {
   email: string;
 }
-
 export const forgotPasswordAsync = createAsyncThunk(
   'user/forgotPassword',
   async (
     payload: IPayload,
-    { rejectWithValue }
-  ): Promise<{ message: string } | unknown> => {
+    { rejectWithValue, fulfillWithValue }
+  ): Promise<string | unknown> => {
     try {
       const res = await axioInstance.post<{ message: string }>(
         'forgot-password',
         payload
       );
-      return res.data;
+      return fulfillWithValue(res.data.message);
     } catch (error: any) {
       return rejectWithValue(error.response.data.message[0]);
     }
@@ -50,12 +49,12 @@ export const ForgotPasswordSlice = createSlice({
         state.status = 'pending';
         state.loading = true;
       })
-      .addCase(forgotPasswordAsync.fulfilled, (state, action: any) => {
-        state.message = action.payload.message;
+      .addCase(forgotPasswordAsync.fulfilled, (state, action) => {
+        state.message = action.payload as string;
         state.status = 'succeeded';
         state.loading = false;
       })
-      .addCase(forgotPasswordAsync.rejected, (state, action: any) => {
+      .addCase(forgotPasswordAsync.rejected, (state, action) => {
         state.message = action.payload as string;
         state.status = 'failed';
         state.loading = false;
