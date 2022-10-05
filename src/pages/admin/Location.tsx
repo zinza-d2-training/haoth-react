@@ -345,16 +345,11 @@ const Location = () => {
       setSites((prev) => [newLocation as ILocation, ...prev]);
     }
   }, [newLocation]);
-  // useEffect(() => {
-  //   if (newLocation) {
-  //     setListData((prev) => [newLocation, ...prev]);
-  //   }
-  // }, [newLocation]);
-  // useEffect(() => {
-  //   if (location === '' && address === '') {
-  //     setListData(dataLocation);
-  //   }
-  // }, [location, address]);
+  useEffect(() => {
+    if (location === '' && address === '') {
+      setSites(totalSites);
+    }
+  }, [location, address, totalSites]);
   const handleClickOpen = (param: Partial<ILocation>) => {
     setRowSelected(param);
     setOpen(true);
