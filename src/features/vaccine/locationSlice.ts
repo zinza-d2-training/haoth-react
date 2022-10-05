@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import { ILocation } from '../../interfaces';
-import { fetchStoreLocation } from '../api/vaccineApi';
+import { ILocation } from '../../interfaces/interface';
+import * as siteService from '../../services/siteService';
 
 interface ILocationState {
-  location: ILocation;
+  location: Partial<ILocation>;
   status: 'idle' | 'pending' | 'succeeded' | 'failed';
   loading: boolean;
 }
@@ -13,7 +13,8 @@ const initialState: ILocationState = {
   location: {
     id: 0,
     name: '',
-    street: '',
+    address: '',
+    wardId: 0,
     leader: '',
     table: 0
   },
@@ -23,9 +24,13 @@ const initialState: ILocationState = {
 
 export const fetchCreateLocation = createAsyncThunk(
   '/create-location',
-  async (payload: Partial<ILocation>) => {
-    const res = await fetchStoreLocation(payload);
-    return res;
+  async (payload: Partial<ILocation>): Promise<ILocation> => {
+    try {
+      const res = await siteService.create(payload);
+      return res;
+    } catch (error) {
+      throw new Error();
+    }
   }
 );
 export const LocationSlice = createSlice({
@@ -40,7 +45,6 @@ export const LocationSlice = createSlice({
       })
       .addCase(fetchCreateLocation.fulfilled, (state, action) => {
         state.location = action.payload;
-        console.log(action.payload);
         state.status = 'succeeded';
         state.loading = false;
       })

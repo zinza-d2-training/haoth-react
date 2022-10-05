@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,11 +11,20 @@ import {
   Slide,
   Button,
   FormControl,
-  TextField
+  TextField,
+  Autocomplete
 } from '@mui/material';
+import {
+  ILocation,
+  IProvince,
+  IWard,
+  IDistrict
+} from '../../interfaces/interface';
 import { TransitionProps } from '@mui/material/transitions';
 import { useAppDispatch } from '../../app';
 import { fetchCreateLocation } from '../../features/vaccine/locationSlice';
+import * as areaService from '../../services/areaService';
+
 const Wrapper = styled.div`
   width: 100%;
 `;
@@ -106,50 +115,121 @@ const Transition = React.forwardRef(function Transition(
 });
 interface IFormData {
   name: string;
-  street: string;
+  address: string;
   leader: string;
   table: number;
+  province: string;
+  district: string;
+  ward: string;
+  wardId: number;
 }
 const schema = yup
   .object({
     name: yup.string().required('Tên địa điểm không được để trống'),
-    street: yup.string().required('Địa chỉ không được để trống'),
+    address: yup.string().required('Địa chỉ không được để trống'),
     leader: yup.string().required('Tên quản lí không được để trống'),
-    table: yup
-      .string()
-      .required()
-      .min(1, 'Bàn tiêm phải lớn hơn 0')
-      .matches(/^[0-9]+$/, 'Bàn tiêm phải là dạng số ')
+    table: yup.number().required().min(1, 'Bàn tiêm phải lớn hơn 0'),
+    wardId: yup.number().required().min(1)
   })
   .required();
 const NewLocation = () => {
   const dispatch = useAppDispatch();
+  const [provinceSelect, setProvinceSelect] = useState<IProvince>();
+  const [districtSelect, setDistrictSelect] = useState<IDistrict>();
+  const [wardSelect, setWardSelect] = useState<IWard>();
+  const [provinces, setProvinces] = useState<IProvince[]>([]);
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [wards, setWards] = useState<IWard[]>([]);
   const [open, setOpen] = useState<boolean>(false);
+
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isValid }
   } = useForm<IFormData>({
     resolver: yupResolver(schema),
     mode: 'onChange',
     defaultValues: {
       name: '',
-      street: '',
+      address: '',
       leader: '',
-      table: 1
+      table: 1,
+      province: '',
+      district: '',
+      ward: ''
     }
   });
+
+  const province = watch('province');
+  const district = watch('district');
+  const ward = watch('ward');
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const provinces = await areaService.findAllProvinces();
+        setProvinces(provinces);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    fetchProvinces();
+  }, []);
+  useEffect(() => {
+    if (provinceSelect) {
+      setValue('district', '');
+      setValue('ward', '');
+      setValue('province', provinceSelect.name);
+      setDistricts([]);
+      setWards([]);
+      const fetchDistricts = async () => {
+        try {
+          const districts = await areaService.findDistricts(provinceSelect.id);
+          setDistricts(districts);
+        } catch (error) {
+          throw new Error();
+        }
+      };
+      fetchDistricts();
+    }
+  }, [provinceSelect, setValue]);
+  useEffect(() => {
+    if (districtSelect) {
+      setValue('district', districtSelect.name);
+      setValue('ward', '');
+      setWards([]);
+      const fetchWards = async () => {
+        try {
+          const wards = await areaService.findWards(districtSelect.id);
+          setWards(wards);
+        } catch (error) {
+          throw new Error();
+        }
+      };
+      fetchWards();
+    }
+  }, [districtSelect, setValue]);
+  useEffect(() => {
+    if (wardSelect) {
+      setValue('wardId', wardSelect.id);
+      setValue('ward', wardSelect.name);
+    }
+  }, [wardSelect, setValue]);
   const handleClose = () => {
     setOpen(false);
   };
   const onSubmit: SubmitHandler<IFormData> = (data) => {
-    console.log(data);
-    dispatch(fetchCreateLocation(data));
+    const { province, district, ward, ...rest } = data;
+    dispatch(fetchCreateLocation(rest as Partial<ILocation>));
     setValue('name', '');
-    setValue('street', '');
+    setValue('address', '');
     setValue('leader', '');
     setValue('table', 1);
+    setValue('province', '');
+    setValue('ward', '');
+    setValue('district', '');
+    setValue('wardId', 0);
     setOpen(false);
   };
   return (
@@ -196,12 +276,78 @@ const NewLocation = () => {
                     <Typography>Địa chỉ</Typography>
                     <FormControl fullWidth>
                       <TextField
-                        helperText={errors.street?.message}
-                        error={!!errors.street}
-                        {...register('street')}
+                        helperText={errors.address?.message}
+                        error={!!errors.address}
+                        {...register('address')}
                         size="small"
                       />
                     </FormControl>
+                  </Input>
+                  <Input>
+                    <Typography>Tỉnh/Thành phố</Typography>
+                    <Autocomplete
+                      fullWidth
+                      disablePortal
+                      options={provinces}
+                      inputValue={province}
+                      getOptionLabel={(option) => option.name}
+                      onChange={(event, value) =>
+                        setProvinceSelect(value as IProvince)
+                      }
+                      isOptionEqualToValue={() => true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          {...register('province')}
+                          size="small"
+                          placeholder="Tỉnh/Thành phố"
+                        />
+                      )}
+                    />
+                  </Input>
+                  <Input>
+                    <Typography>Quận/Huyện</Typography>
+                    <Autocomplete
+                      fullWidth
+                      readOnly={!province}
+                      disablePortal
+                      options={districts}
+                      inputValue={district}
+                      onChange={(event, value) =>
+                        setDistrictSelect(value as IDistrict)
+                      }
+                      getOptionLabel={(option) => option.name}
+                      isOptionEqualToValue={() => true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          {...register('district')}
+                          size="small"
+                          placeholder="Quận/Huyện"
+                        />
+                      )}
+                    />
+                  </Input>
+                  <Input>
+                    <Typography>Xã/Phường</Typography>
+                    <Autocomplete
+                      fullWidth
+                      disablePortal
+                      // readOnly={!!district}
+                      options={wards}
+                      inputValue={ward}
+                      onChange={(event, value) => setWardSelect(value as IWard)}
+                      getOptionLabel={(option) => option.name}
+                      isOptionEqualToValue={() => true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          {...register('ward')}
+                          size="small"
+                          placeholder="Xã/Phường"
+                        />
+                      )}
+                    />
                   </Input>
                   <Input>
                     <Typography>Người đứng đầu cơ sở</Typography>
