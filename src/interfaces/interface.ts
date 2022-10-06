@@ -45,6 +45,7 @@ export interface IDistrict {
   name: string;
   createdAt: Date;
   updatedAt: Date;
+  province?: IProvince;
 }
 export interface IWard {
   id: number;
@@ -52,4 +53,14 @@ export interface IWard {
   name: string;
   createdAt: Date;
   updatedAt: Date;
+  district?: IDistrict;
+}
+export interface ILocation {
+  id: number;
+  name: string;
+  address: string;
+  wardId: number;
+  leader: string;
+  table: number;
+  ward?: IWard;
 }

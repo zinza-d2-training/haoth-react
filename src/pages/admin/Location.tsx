@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogContent,
@@ -23,12 +24,18 @@ import {
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { ILocation } from '../../interfaces';
-import { dataLocation } from '../../data/fake';
+import {
+  ILocation,
+  IProvince,
+  IWard,
+  IDistrict
+} from '../../interfaces/interface';
 import { TransitionProps } from '@mui/material/transitions';
 import { NewLocation } from '../../components/Create';
-import { useAppSelector } from '../../app';
+import * as areaService from '../../services/areaService';
+import * as siteService from '../../services/siteService';
 import { selectLocation } from '../../features/vaccine/locationSlice';
+import { useAppSelector } from '../../app';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -146,7 +153,7 @@ const columns: GridColDef[] = [
     align: 'center'
   },
   {
-    field: 'street',
+    field: 'address',
     headerName: 'Địa chỉ',
     minWidth: 400,
     headerAlign: 'center',
@@ -188,20 +195,25 @@ function CustomPagination() {
 interface IFormEdit {
   id: number;
   name: string;
-  street: string;
+  address: string;
   leader: string;
   table: number;
+  ward: string;
+  district: string;
+  province: string;
+  wardId: number;
 }
 const schema = yup
   .object({
     name: yup.string().required('Tên địa điểm không được để trống'),
-    street: yup.string().required('Địa chỉ không được để trống'),
+    address: yup.string().required('Địa chỉ không được để trống'),
     leader: yup.string().required('Tên quản lí không được để trống'),
+    wardId: yup.number().required().min(1),
     table: yup
-      .string()
+      .number()
+      .positive('Phai la so lon hon 0')
       .required()
       .min(1, 'Bàn tiêm phải lớn hơn 0')
-      .matches(/^[0-9]+$/, 'Bàn tiêm phải là dạng số ')
   })
   .required();
 const Transition = React.forwardRef(function Transition(
@@ -214,71 +226,172 @@ const Transition = React.forwardRef(function Transition(
 });
 const Location = () => {
   const newLocation = useAppSelector(selectLocation);
+  const [provinceSelect, setProvinceSelect] = useState<IProvince>();
+  const [districtSelect, setDistrictSelect] = useState<IDistrict>();
+  const [wardSelect, setWardSelect] = useState<IWard>();
+  const [provinces, setProvinces] = useState<IProvince[]>([]);
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [wards, setWards] = useState<IWard[]>([]);
   const [edit, setEdit] = useState<boolean>(false);
   const [location, setLocation] = useState<string>('');
   const [address, setAddress] = useState<string>('');
+  const [totalSites, setTotalSites] = useState<ILocation[]>([]);
+  const [sites, setSites] = useState<ILocation[]>([]);
   const [rowSelected, setRowSelected] = useState<Partial<ILocation>>();
-  const [listData, setListData] = useState<ILocation[]>(dataLocation);
   const [open, setOpen] = React.useState<boolean>(false);
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { isValid, errors }
   } = useForm<IFormEdit>({
     resolver: yupResolver(schema),
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      province: '',
+      district: '',
+      ward: ''
+    }
   });
+  const province = watch('province');
+  const district = watch('district');
+  const ward = watch('ward');
   useEffect(() => {
-    setValue('id', rowSelected?.id as number);
-    setValue('name', rowSelected?.name as string);
-    setValue('street', rowSelected?.street as string);
-    setValue('leader', rowSelected?.leader as string);
-    setValue('table', rowSelected?.table as number);
+    const fetchSites = async () => {
+      try {
+        const sites = await siteService.findAll();
+        setTotalSites(sites);
+        setSites(sites);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    const fetchProvinces = async () => {
+      try {
+        const provinces = await areaService.findAllProvinces();
+        setProvinces(provinces);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    fetchSites();
+    fetchProvinces();
+  }, []);
+  useEffect(() => {
+    if (provinceSelect) {
+      setValue('district', '');
+      setValue('ward', '');
+      setValue('province', provinceSelect.name);
+      setDistricts([]);
+      setWards([]);
+      const fetchDistricts = async () => {
+        try {
+          const districts = await areaService.findDistricts(provinceSelect.id);
+          setDistricts(districts);
+        } catch (error) {
+          throw new Error();
+        }
+      };
+      fetchDistricts();
+    }
+  }, [provinceSelect, setValue]);
+  useEffect(() => {
+    if (districtSelect) {
+      setValue('district', districtSelect.name);
+      setValue('ward', '');
+      setWards([]);
+      const fetchWards = async () => {
+        try {
+          const wards = await areaService.findWards(districtSelect.id);
+          setWards(wards);
+        } catch (error) {
+          throw new Error();
+        }
+      };
+      fetchWards();
+    }
+  }, [districtSelect, setValue]);
+  useEffect(() => {
+    if (wardSelect) {
+      setValue('wardId', wardSelect.id);
+      setValue('ward', wardSelect.name);
+    }
+  }, [wardSelect, setValue]);
+  useEffect(() => {
+    if (rowSelected) {
+      const war = rowSelected.ward;
+      const dis = war?.district;
+      const pro = war?.district?.province;
+      setProvinceSelect(pro);
+      setDistrictSelect(dis);
+      setWardSelect(war);
+      setValue('wardId', rowSelected.wardId as number);
+      setValue('id', rowSelected?.id as number);
+      setValue('name', rowSelected?.name as string);
+      setValue('address', rowSelected?.address as string);
+      setValue('leader', rowSelected?.leader as string);
+      setValue('table', rowSelected?.table as number);
+      setValue('ward', rowSelected?.ward?.name as string);
+      setValue('district', rowSelected?.ward?.district?.name as string);
+      setValue(
+        'province',
+        rowSelected?.ward?.district?.province?.name as string
+      );
+    }
   }, [rowSelected, setValue]);
   useEffect(() => {
-    if (newLocation) {
-      setListData((prev) => [newLocation, ...prev]);
+    if (newLocation.id) {
+      setSites((prev) => [newLocation as ILocation, ...prev]);
     }
   }, [newLocation]);
   useEffect(() => {
     if (location === '' && address === '') {
-      setListData(dataLocation);
+      setSites(totalSites);
     }
-  }, [location, address]);
-
+  }, [location, address, totalSites]);
   const handleClickOpen = (param: Partial<ILocation>) => {
     setRowSelected(param);
     setOpen(true);
   };
 
   const handleClose = () => {
+    setEdit(false);
     setOpen(false);
   };
   const onSubmitSearch = () => {
-    const res = dataLocation
+    const res = totalSites
       .filter((item) => {
         return item.name
           .toLocaleLowerCase()
           .includes(location.toLocaleLowerCase());
       })
       .filter((item) => {
-        return item.street.includes(address);
+        return item.address.includes(address);
       });
-    setListData(res);
+    setSites(res);
   };
-  const onUpdateLocation: SubmitHandler<Partial<ILocation>> = (data) => {
-    const result = listData.map((item) => {
-      if (item.id === data.id) {
-        item = {
-          ...item,
-          ...data
-        };
-      }
-      return item;
-    });
-    setListData(result);
-    setOpen(false);
+  const onUpdateLocation: SubmitHandler<Partial<IFormEdit>> = async (data) => {
+    const { ward, district, province, id, ...rest } = data;
+    if (id && rest) {
+      rest.table as number;
+      const updatedSite = await siteService.update(
+        id,
+        rest as Partial<ILocation>
+      );
+      const result = sites.map((item) => {
+        if (item.id === updatedSite.id) {
+          item = {
+            ...item,
+            ...updatedSite
+          };
+        }
+        return item;
+      });
+      setSites(result);
+      setEdit(false);
+      setOpen(false);
+    }
   };
   return (
     <Wrapper>
@@ -313,12 +426,10 @@ const Location = () => {
         <Row>
           <DataGrid
             disableColumnMenu
-            onRowClick={(param) =>
-              handleClickOpen(param.row as Partial<ILocation>)
-            }
+            onRowClick={(param) => handleClickOpen(param.row as ILocation)}
             autoPageSize
             autoHeight
-            rows={listData}
+            rows={sites}
             columns={columns}
             pageSize={10}
             rowsPerPageOptions={[10]}
@@ -377,13 +488,82 @@ const Location = () => {
                       <Typography>Địa chỉ</Typography>
                       <FormControl fullWidth>
                         <TextField
-                          error={!!errors.street}
-                          helperText={errors.street?.message}
+                          error={!!errors.address}
+                          helperText={errors.address?.message}
                           inputProps={{ readOnly: !edit }}
-                          {...register('street')}
+                          {...register('address')}
                           size="small"
                         />
                       </FormControl>
+                    </Input>{' '}
+                    <Input>
+                      <Typography>Tỉnh/Thành phố</Typography>
+                      <Autocomplete
+                        fullWidth
+                        readOnly={!edit}
+                        disablePortal
+                        options={provinces}
+                        inputValue={province}
+                        getOptionLabel={(option) => option.name}
+                        onChange={(event, value) =>
+                          setProvinceSelect(value as IProvince)
+                        }
+                        isOptionEqualToValue={() => true}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...register('province')}
+                            size="small"
+                            placeholder="Tỉnh/Thành phố"
+                          />
+                        )}
+                      />
+                    </Input>
+                    <Input>
+                      <Typography>Quận/Huyện</Typography>
+                      <Autocomplete
+                        fullWidth
+                        readOnly={!!province && !edit}
+                        disablePortal
+                        options={districts}
+                        inputValue={district}
+                        onChange={(event, value) =>
+                          setDistrictSelect(value as IDistrict)
+                        }
+                        getOptionLabel={(option) => option.name}
+                        isOptionEqualToValue={() => true}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...register('district')}
+                            size="small"
+                            placeholder="Quận/Huyện"
+                          />
+                        )}
+                      />
+                    </Input>
+                    <Input>
+                      <Typography>Xã/Phường</Typography>
+                      <Autocomplete
+                        fullWidth
+                        disablePortal
+                        readOnly={!!district && !edit}
+                        options={wards}
+                        inputValue={ward}
+                        onChange={(event, value) =>
+                          setWardSelect(value as IWard)
+                        }
+                        getOptionLabel={(option) => option.name}
+                        isOptionEqualToValue={() => true}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...register('ward')}
+                            size="small"
+                            placeholder="Xã/Phường"
+                          />
+                        )}
+                      />
                     </Input>
                     <Input>
                       <Typography>Người đứng đầu cơ sở</Typography>
