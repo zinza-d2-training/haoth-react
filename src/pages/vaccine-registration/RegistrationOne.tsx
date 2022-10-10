@@ -16,11 +16,12 @@ import StepCheck from './StepCheck';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import Heading from './Heading';
-
-import { groups as listGroups, shifts } from '../../data/fake';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { IGroup } from '../../interfaces';
+import { IGroup, Shift } from '../../interfaces/interface';
+import { axioInstance } from '../../utils/request/httpRequest';
+import { format } from '../../utils/formatTime';
+
 const Wrapper = styled.div`
   width: 100vw;
   min-height: calc(100vh - 80px - 256px);
@@ -114,34 +115,51 @@ const Title = styled(Typography)`
 `;
 interface IFormData {
   group: string;
-  cardInsurance: string;
+  insurranceCard: string;
   job: string;
-  workplace: string;
+  workPlace: string;
   address: string;
-  time: string;
-  shift: string;
+  time: Date;
+  shiftName: string;
+  shift: number;
+  groupId: number;
 }
 const schema = yup
   .object({
     group: yup.string().required('Nhóm là bắt buộc'),
-    cardInsurance: yup
+    insurranceCard: yup
       .string()
       .required('BHYT là bắt buộc')
       .matches(/^[0-9]+$/, 'BHYT phải là dạng số ')
       .matches(/^(\d{10})$/, 'BHYT chỉ chứa 10 số'),
     job: yup.string().required('Nghề nghiệp là bắt buộc'),
-    workplace: yup.string().required('Nơi công tác là bắt buộc'),
+    workPlace: yup.string().required('Nơi công tác là bắt buộc'),
     address: yup.string().required('Địa chỉ là bắt buộc'),
     time: yup.string().required(),
-    shift: yup.string().required()
+    shiftName: yup.string().required('Ca tiêm là bắt buộc'),
+    groupId: yup.number().required().min(1),
+    shift: yup.number().required().min(0)
   })
   .required();
+const shifts: Shift[] = [
+  {
+    id: 0,
+    name: 'Buổi sáng'
+  },
+  {
+    id: 1,
+    name: 'Buổi chiều'
+  },
+  {
+    id: 2,
+    name: 'Cả ngày'
+  }
+];
 const RegistrationOne = () => {
   const navigate = useNavigate();
   const [groups, setGroups] = useState<IGroup[]>([]);
-  useEffect(() => {
-    setGroups(listGroups);
-  }, []);
+  const [groupSelect, setGroupSelecct] = useState<IGroup>();
+  const [shiftSelect, setShiftSlect] = useState<Shift>();
   const {
     register,
     control,
@@ -153,17 +171,43 @@ const RegistrationOne = () => {
     mode: 'onChange',
     defaultValues: {
       group: '',
-      cardInsurance: '',
+      groupId: 0,
+      insurranceCard: '',
       job: '',
       address: '',
-      time: Date(),
-      shift: 'Cả ngày'
+      time: format(Date()),
+      shiftName: 'Cả ngày',
+      shift: 2
     }
   });
+  useEffect(() => {
+    const fetchGroup = async () => {
+      try {
+        const res = await axioInstance.get<IGroup[]>('/groups');
+        setGroups(res.data);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    fetchGroup();
+  }, []);
+  useEffect(() => {
+    if (groupSelect) {
+      setValue('groupId', groupSelect.id);
+      setValue('group', groupSelect.name);
+    }
+  }, [groupSelect, setValue]);
+  useEffect(() => {
+    if (shiftSelect) {
+      setValue('shiftName', shiftSelect.name);
+      setValue('shift', shiftSelect.id);
+    }
+  }, [shiftSelect, setValue]);
   const onSubmit: SubmitHandler<IFormData> = (data) => {
+    const { group, shiftName, ...rest } = data;
     setTimeout(() => {
       navigate('/registration-step-2', {
-        state: { data }
+        state: { data: rest }
       });
     }, 1000);
   };
@@ -187,8 +231,9 @@ const RegistrationOne = () => {
                     sx={{ width: '100%' }}
                     disablePortal
                     options={groups}
+                    getOptionLabel={(option) => option.name}
                     onChange={(event, value) =>
-                      setValue('group', value?.label as string)
+                      setGroupSelecct(value as IGroup)
                     }
                     renderInput={(params) => (
                       <TextField
@@ -206,10 +251,10 @@ const RegistrationOne = () => {
                   <Title>Số thẻ bảo hiểm y tế</Title>
                   <FormControl sx={{ width: '100%' }}>
                     <TextField
-                      error={!!errors.cardInsurance}
-                      helperText={errors.cardInsurance?.message}
+                      error={!!errors.insurranceCard}
+                      helperText={errors.insurranceCard?.message}
                       size="small"
-                      {...register('cardInsurance')}
+                      {...register('insurranceCard')}
                       placeholder="Số thẻ bảo hiểm y tế"
                     />
                   </FormControl>
@@ -232,10 +277,10 @@ const RegistrationOne = () => {
                   <Title>Đơn vị công tác</Title>
                   <FormControl sx={{ width: '100%' }}>
                     <TextField
-                      error={!!errors.workplace}
-                      helperText={errors.workplace?.message}
+                      error={!!errors.workPlace}
+                      helperText={errors.workPlace?.message}
                       size="small"
-                      {...register('workplace')}
+                      {...register('workPlace')}
                       placeholder="Đơn vị công tác"
                     />
                   </FormControl>
@@ -283,7 +328,7 @@ const RegistrationOne = () => {
                               views={['year', 'month', 'day']}
                               value={field.value || Date()}
                               onChange={(date: any) => {
-                                field.onChange(date ? date : '');
+                                field.onChange(date ? format(date) : null);
                               }}
                               renderInput={(params: any) => {
                                 return <TextField {...params} />;
@@ -298,18 +343,18 @@ const RegistrationOne = () => {
                 <InputComponent>
                   <Title>Buổi tiêm mong muốn</Title>
                   <Autocomplete
-                    defaultValue={shifts[2]}
                     sx={{ width: '100%' }}
+                    defaultValue={shifts[2]}
                     options={shifts}
-                    onChange={(event, value) =>
-                      setValue('shift', value?.label as string)
-                    }
+                    getOptionLabel={(option) => option.name}
+                    onChange={(event, value) => setShiftSlect(value as Shift)}
                     renderInput={(params) => (
                       <TextField
                         {...params}
                         size="small"
-                        {...register('shift')}
-                        error={!!errors.shift}
+                        {...register('shiftName')}
+                        helperText={errors.shiftName?.message}
+                        error={!!errors.shiftName}
                         placeholder="Bạn muốn tiêm buổi nào?"
                       />
                     )}

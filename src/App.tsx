@@ -10,7 +10,6 @@ import styled from '@emotion/styled';
 import Login from './pages/login';
 import ForgotPassword from './pages/forgot-password';
 import Register from './pages/register/Register';
-import { useAccessToken } from './hooks/useAccessToken';
 import Homepage from './pages/homepage/Homepage';
 import Layout from './layouts/Layout';
 import {
@@ -20,12 +19,15 @@ import {
 } from './pages/vaccine-registration';
 import { Account, Certification, ResultRegistration } from './pages/user';
 import { Place } from './pages/admin';
+import { useLogin } from './hooks/useLogin';
+import RequireAuth from './layouts/RequireAuth';
+import RequireAdmin from './layouts/RequiredAdmin';
 
 const Wrapper = styled.div`
   overflow-x: hidden;
 `;
 function App() {
-  const token = useAccessToken();
+  const isLogin = useLogin();
   return (
     <Wrapper>
       <Router>
@@ -40,15 +42,15 @@ function App() {
           />
           <Route
             path="/login"
-            element={token === '' ? <Login /> : <Navigate to={'/'} />}
+            element={!isLogin ? <Login /> : <Navigate to={'/'} />}
           />
           <Route
             path="/forgot-password"
-            element={token === '' ? <ForgotPassword /> : <Navigate to={'/'} />}
+            element={!isLogin ? <ForgotPassword /> : <Navigate to={'/'} />}
           />
           <Route
             path="/register"
-            element={token === '' ? <Register /> : <Navigate to={'/'} />}
+            element={!isLogin ? <Register /> : <Navigate to={'/'} />}
           />
           <Route
             path="/home"
@@ -58,62 +60,79 @@ function App() {
               </Layout>
             }
           />
-          <Route
-            path="/registration-step-1"
-            element={
-              <Layout>
-                <RegistrationOne />
-              </Layout>
-            }
-          />
-          <Route
-            path="/registration-step-2"
-            element={
-              <Layout>
-                <RegistrationTwo />
-              </Layout>
-            }
-          />
-          <Route
-            path="/registration-step-3"
-            element={
-              <Layout>
-                <RegistrationThree />
-              </Layout>
-            }
-          />
-          <Route
-            path="/user/certification"
-            element={
-              <Layout>
-                <Certification />
-              </Layout>
-            }
-          />
-          <Route
-            path="/user/result"
-            element={
-              <Layout>
-                <ResultRegistration />
-              </Layout>
-            }
-          />
-          <Route
-            path="/user/account"
-            element={
-              <Layout>
-                <Account />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admin/place"
-            element={
-              <Layout>
-                <Place />
-              </Layout>
-            }
-          />
+
+          <Route element={<RequireAuth />}>
+            <Route
+              path="/registration-step-1"
+              element={
+                <Layout>
+                  <RegistrationOne />
+                </Layout>
+              }
+            />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route
+              path="/registration-step-2"
+              element={
+                <Layout>
+                  <RegistrationTwo />
+                </Layout>
+              }
+            />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route
+              path="/registration-step-3"
+              element={
+                <Layout>
+                  <RegistrationThree />
+                </Layout>
+              }
+            />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route
+              path="/user/certification"
+              element={
+                <Layout>
+                  <Certification />
+                </Layout>
+              }
+            />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route
+              path="/user/result"
+              element={
+                <Layout>
+                  <ResultRegistration />
+                </Layout>
+              }
+            />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route
+              path="/user/account"
+              element={
+                <Layout>
+                  <Account />
+                </Layout>
+              }
+            />
+          </Route>
+          <Route element={<RequireAuth />}>
+            <Route element={<RequireAdmin />}>
+              <Route
+                path="/admin/place"
+                element={
+                  <Layout>
+                    <Place />
+                  </Layout>
+                }
+              />
+            </Route>
+          </Route>
         </Routes>
       </Router>
     </Wrapper>

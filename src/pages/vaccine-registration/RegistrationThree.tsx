@@ -7,9 +7,11 @@ import { Link } from 'react-router-dom';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { useLocalStorage } from '../../hooks';
-import { fetchUser, InfoUser } from '../../features/user/userAPI';
-import { formatDate } from '../../utils/formatTime';
+import { useAppSelector } from '../../app';
+import { selectUser } from '../../features/auth/authSlice';
+import { IVaccineRegistrationResponse } from '../../interfaces/interface';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import { useAccessToken } from '../../hooks/useAccessToken';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -92,13 +94,28 @@ const Continue = styled(Button)`
     color: #ffffff;
   }
 `;
+const STATUS: number = 1;
 const RegistrationThree = () => {
-  const [data] = useLocalStorage('vaccineRegistration', '');
-  const [user, setUser] = useState<InfoUser>();
+  const currentUser = useAppSelector(selectUser);
+  const token = useAccessToken();
+  const [vaccineRegister, setVaccineRegister] =
+    useState<IVaccineRegistrationResponse>();
   useEffect(() => {
-    const res = fetchUser(data.userId);
-    setUser(res);
-  }, [data]);
+    const fetchNewRegister = async () => {
+      try {
+        const res = await axiosInstanceToken.get<IVaccineRegistrationResponse>(
+          `vaccine-registrations/users?token=${token}&status=${STATUS}`
+        );
+        if (res) {
+          setVaccineRegister(res.data);
+        }
+      } catch (error: any) {
+        throw new Error(error.message);
+      }
+    };
+    fetchNewRegister();
+  }, [token]);
+
   const exportPDF = () => {
     const PDF: HTMLElement | null = document.getElementById('export-pdf');
     if (PDF) {
@@ -120,7 +137,7 @@ const RegistrationThree = () => {
               <Code>
                 <Typography variant="h6" component={'h6'}>
                   Đăng ký tiêm chủng COVID-19 thành công. Mã đặt tiêm của bạn
-                  là: <CodeStrong>0120211103501237</CodeStrong>.
+                  là: <CodeStrong>{vaccineRegister?.code}</CodeStrong>.
                 </Typography>
               </Code>
               <Code>
@@ -149,19 +166,23 @@ const RegistrationThree = () => {
                 <Col>
                   <Typography variant="body1">Họ và tên</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {user?.name}
+                    {currentUser?.name}
                   </Typography>
                 </Col>
                 <Col>
                   <Typography variant="body1">Ngày sinh</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {formatDate(user?.birthday as string)}
+                    {currentUser?.birthday + ''}
                   </Typography>
                 </Col>
                 <Col>
                   <Typography variant="body1">Giới tính</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {user?.gender}
+                    {currentUser?.gender === 0
+                      ? 'Nữ'
+                      : currentUser?.gender === 1
+                      ? 'Nam'
+                      : 'Other'}
                   </Typography>
                 </Col>
               </Row>
@@ -171,13 +192,13 @@ const RegistrationThree = () => {
                     Số CMND/CCCD/Mã định dạng công dân
                   </Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {user?.card}
+                    {currentUser?.identifyCard}
                   </Typography>
                 </Col>
                 <Col>
                   <Typography variant="body1">Số thẻ BHYT</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {data?.cardInsurance}
+                    {vaccineRegister?.insurranceCard}
                   </Typography>
                 </Col>
               </Row>
@@ -185,19 +206,19 @@ const RegistrationThree = () => {
                 <Col>
                   <Typography variant="body1">Tỉnh/Thành phố</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {user?.province}
+                    {currentUser.ward?.district?.province?.name}
                   </Typography>
                 </Col>
                 <Col>
                   <Typography variant="body1">Quận/Huyện</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {user?.district}
+                    {currentUser.ward?.district?.name}
                   </Typography>
                 </Col>
                 <Col>
                   <Typography variant="body1">Xã/Phường</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {user?.ward}
+                    {currentUser?.ward?.name}
                   </Typography>
                 </Col>
               </Row>

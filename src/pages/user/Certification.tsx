@@ -7,9 +7,12 @@ import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 import { Link } from 'react-router-dom';
 import { Logo_3, QrCode } from '../../assets/images';
 import { Person } from '@mui/icons-material';
-import { IUser, IVaccineUsed } from '../../interfaces';
-import { fetchUser, fetchVaccineUsed } from '../../features/user/userAPI';
 import { formatDate } from '../../utils/formatTime';
+import { useAppSelector } from '../../app';
+import { selectUser } from '../../features/auth/authSlice';
+import { useAccessToken } from '../../hooks/useAccessToken';
+import { IVaccineRegistrationResponse } from '../../interfaces/interface';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -131,28 +134,67 @@ const Data = styled.div`
   margin-left: 8px;
 `;
 const columns: GridColDef[] = [
-  { field: 'numberInjection', headerName: 'Mũi số', type: 'number' },
+  {
+    field: 'id',
+    headerName: 'Mũi số',
+    type: 'number',
+    headerAlign: 'center',
+    align: 'center'
+  },
   {
     field: 'time',
     headerName: 'Thời gian tiêm',
     minWidth: 210,
+    headerAlign: 'center',
+    align: 'center',
     valueGetter: (params: GridValueGetterParams) => formatDate(params.row.time)
   },
-  { field: 'vaccineName', headerName: 'Tên Vaccine', minWidth: 250 },
-  { field: 'numberLot', headerName: 'Số lô', minWidth: 125 },
-  { field: 'location', headerName: 'Địa điểm tiêm', minWidth: 250 }
+  {
+    field: 'vaccineName',
+    headerName: 'Tên Vaccine',
+    minWidth: 250,
+    headerAlign: 'center',
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => params.row.vaccine.name
+  },
+  {
+    field: 'numberLot',
+    headerName: 'Số lô',
+    minWidth: 125,
+    headerAlign: 'center',
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => params.row.vaccine.code
+  },
+  {
+    field: 'location',
+    headerName: 'Địa điểm tiêm',
+    minWidth: 250,
+    headerAlign: 'center',
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => params.row.site.name
+  }
 ];
+
+const STATUS: number = 2;
 const Certification = () => {
-  const [user, setUser] = useState<IUser>();
-  const [vaccineUsed, setVaccineUsed] = useState<Partial<IVaccineUsed>[]>([]);
+  const currentUser = useAppSelector(selectUser);
+  const token = useAccessToken();
+  const [vaccineRegisters, setVaccineRegisters] = useState<
+    IVaccineRegistrationResponse[]
+  >([]);
   useEffect(() => {
-    const res = fetchUser('sadjsabass');
-    setUser(res as IUser);
-  }, []);
-  useEffect(() => {
-    const res = fetchVaccineUsed(user?.id as string);
-    setVaccineUsed(res);
-  }, [user]);
+    const fetchData = async () => {
+      try {
+        const res = await axiosInstanceToken.get<
+          IVaccineRegistrationResponse[]
+        >(`vaccine-registrations/users?token=${token}&status=${STATUS}`);
+        setVaccineRegisters(res.data);
+      } catch (error: any) {
+        throw new Error(error.response.data.message);
+      }
+    };
+    fetchData();
+  }, [token]);
   return (
     <Wrapper>
       <Menu />
@@ -177,7 +219,7 @@ const Certification = () => {
                   Họ và tên
                 </Typography>
                 <Typography fontWeight={500} variant="body1" align="left">
-                  {user?.name}
+                  {currentUser?.name}
                 </Typography>
               </Col>
               <Col>
@@ -185,7 +227,7 @@ const Certification = () => {
                   Ngày sinh
                 </Typography>
                 <Typography fontWeight={500} variant="body1" align="left">
-                  {formatDate(user?.birthday as string)}
+                  {currentUser.birthday + ''}
                 </Typography>
               </Col>
               <Col>
@@ -193,7 +235,7 @@ const Certification = () => {
                   Số CMND/CCCD
                 </Typography>
                 <Typography fontWeight={500} variant="body1" align="left">
-                  {user?.card}
+                  {currentUser?.identifyCard}
                 </Typography>
               </Col>
               <Col>
@@ -211,7 +253,11 @@ const Certification = () => {
                   Địa chỉ
                 </Typography>
                 <Typography fontWeight={500} variant="body1" align="left">
-                  {user?.ward + ' - ' + user?.district + ' - ' + user?.province}
+                  {currentUser?.ward?.name +
+                    ' - ' +
+                    currentUser.ward?.district?.name +
+                    ' - ' +
+                    currentUser.ward?.district?.province?.name}
                 </Typography>
               </Col>
             </Row>
@@ -221,7 +267,7 @@ const Certification = () => {
                   Kết luận
                 </Typography>
                 <Typography fontWeight={500} variant="body1" align="left">
-                  {vaccineUsed.length > 0
+                  {vaccineRegisters.length > 0
                     ? 'Đã được tiêm phòng vắc xin phòng bệnh Covid-19'
                     : 'Bạn chưa tiêm phòng vắc xin phòng bênh Covid-19'}
                 </Typography>
@@ -240,7 +286,7 @@ const Certification = () => {
               }}
               autoPageSize={false}
               autoHeight
-              rows={vaccineUsed}
+              rows={vaccineRegisters}
               columns={columns}
               pageSize={5}
               rowsPerPageOptions={[5]}
@@ -253,15 +299,15 @@ const Certification = () => {
           </Redirect>
         </Certificate>
         <Card>
-          {vaccineUsed.length > 0 && (
-            <BoxCard completed={vaccineUsed?.length >= 2}>
+          {vaccineRegisters.length > 0 && (
+            <BoxCard completed={vaccineRegisters?.length >= 2}>
               <Logo src={Logo_3} alt="logo" />
               <Typography
                 fontWeight={500}
                 color="#FFFFFF"
                 variant="h5"
                 component={'h5'}>
-                ĐÃ TIÊM {vaccineUsed.length} MŨI VẮC XIN
+                ĐÃ TIÊM {vaccineRegisters.length} MŨI VẮC XIN
               </Typography>
               <Qrcode>
                 <Image src={QrCode} alt="QRCode" />
@@ -274,7 +320,7 @@ const Certification = () => {
                       Họ và tên
                     </Typography>
                     <Typography fontWeight={500} variant="body1">
-                      {user?.name}
+                      {currentUser?.name}
                     </Typography>
                   </Data>
                 </Item>
@@ -285,7 +331,7 @@ const Certification = () => {
                       Ngày sinh
                     </Typography>
                     <Typography fontWeight={500} variant="body1">
-                      {formatDate(user?.birthday as string)}
+                      {currentUser?.birthday + ''}
                     </Typography>
                   </Data>
                 </Item>
@@ -296,7 +342,7 @@ const Certification = () => {
                       Số CMND/CCCD
                     </Typography>
                     <Typography fontWeight={500} variant="body1">
-                      {user?.card}
+                      {currentUser?.identifyCard}
                     </Typography>
                   </Data>
                 </Item>

@@ -12,9 +12,9 @@ import {
 } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
-import { useLocalStorage } from '../../hooks';
-import { useAppDispatch } from '../../app';
+import { useAppDispatch, useAppSelector } from '../../app';
 import { registrationAsync } from '../../features/user/registrationVaccineSlice';
+import { selectUser } from '../../features/auth/authSlice';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -109,7 +109,7 @@ interface Ilocation {
 }
 const RegistrationTwo = () => {
   const dispatch = useAppDispatch();
-  const [user] = useLocalStorage('user', '');
+  const currentUser = useAppSelector(selectUser);
   const [check, setCheck] = useState<boolean>(false);
   const navigate = useNavigate();
   const location: Ilocation = useLocation();
@@ -124,14 +124,12 @@ const RegistrationTwo = () => {
     if (check) {
       const vaccineRegistrationInfo = {
         ...data,
-        userId: user.id || 'sadjsabass' //fake k can dang nhap
+        userId: currentUser.id
       };
-      new Promise((resolver) => {
-        dispatch(registrationAsync(vaccineRegistrationInfo));
-      });
+      dispatch(registrationAsync(vaccineRegistrationInfo));
       setTimeout(() => {
         navigate('/registration-step-3');
-      }, 1000);
+      }, 500);
     }
   };
 
