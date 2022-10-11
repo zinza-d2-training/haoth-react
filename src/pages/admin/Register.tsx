@@ -418,7 +418,7 @@ const Register = () => {
     const { siteId, vaccineId, status, time, address, id } = data;
     const update = { siteId, vaccineId, status, time, address };
     try {
-      const res = await axiosInstanceToken.patch(
+      const res = await axiosInstanceToken.patch<IVaccineRegistrationResponse>(
         `http://localhost:5000/vaccine-registrations/${id}`,
         update
       );
