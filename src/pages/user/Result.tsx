@@ -11,9 +11,11 @@ import {
   Typography,
   TableCell
 } from '@mui/material';
-import { useLocalStorage } from '../../hooks';
-import { fetchUser, InfoUser } from '../../features/user/userAPI';
-import { formatDate } from '../../utils/formatTime';
+import { useAppSelector } from '../../app';
+import { selectUser } from '../../features/auth/authSlice';
+import { useAccessToken } from '../../hooks/useAccessToken';
+import { IVaccineRegistrationResponse } from '../../interfaces/interface';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -41,13 +43,26 @@ const Status = styled.div`
 const Cell = styled(TableCell)`
   text-align: center;
 `;
+
+const STATUS: number = 1;
 const Result = () => {
-  const [data] = useLocalStorage('vaccineRegistration', '');
-  const [user, setUser] = useState<InfoUser>();
+  const currentUser = useAppSelector(selectUser);
+  const token = useAccessToken();
+  const [vaccineRegister, setVaccineRegister] =
+    useState<IVaccineRegistrationResponse>();
   useEffect(() => {
-    const res = fetchUser(data.userId);
-    setUser(res);
-  }, [data]);
+    const fetchData = async () => {
+      try {
+        const res = await axiosInstanceToken.get<IVaccineRegistrationResponse>(
+          `vaccine-registrations/users?token=${token}&status=${STATUS}`
+        );
+        setVaccineRegister(res.data);
+      } catch (error: any) {
+        throw new Error(error.response.data.message);
+      }
+    };
+    fetchData();
+  }, [token]);
   return (
     <Wrapper>
       <Menu />
@@ -66,28 +81,30 @@ const Result = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {user && (
+              {vaccineRegister && (
                 <TableRow>
                   <Cell>
                     <Typography>1</Typography>
                   </Cell>
                   <Cell>
-                    <Typography>{user?.name}</Typography>
+                    <Typography>{currentUser?.name}</Typography>
                   </Cell>
                   <Cell>
-                    <Typography>
-                      {formatDate(user?.birthday as string)}
-                    </Typography>
+                    <Typography>{currentUser?.birthday + ''}</Typography>
                   </Cell>
                   <Cell>
-                    <Typography>{user?.gender}</Typography>
+                    <Typography>{currentUser?.gender}</Typography>
                   </Cell>
                   <Cell>
-                    <Typography>{user?.card}</Typography>
+                    <Typography>{currentUser?.identifyCard}</Typography>
                   </Cell>
                   <Cell>
                     <Status>
-                      <Typography>Đăng ký thành công</Typography>
+                      <Typography>
+                        {vaccineRegister.status === 1
+                          ? 'Đăng ký thành công'
+                          : 'Cancel'}
+                      </Typography>
                     </Status>
                   </Cell>
                 </TableRow>

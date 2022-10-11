@@ -1,33 +1,44 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import { IVaccineRegistrationInfo } from '../../interfaces';
-import { saveLocalStorage } from '../../utils/localStorage';
-import { fetchRegistration } from './userAPI';
+import {
+  IVaccineRegistration,
+  IVaccineRegistrationResponse
+} from '../../interfaces/interface';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
 
 interface IVaccineRegistrationState {
-  vaccineRegistrationInfo: IVaccineRegistrationInfo;
+  data: Partial<IVaccineRegistrationResponse>;
   status: 'idle' | 'pending' | 'succeeded' | 'failed';
   loading: boolean;
 }
 
 export const registrationAsync = createAsyncThunk(
   '/registration-vaccine',
-  async (payload: IVaccineRegistrationInfo) => {
-    const response = await fetchRegistration(payload);
-    return response.data;
+  async (
+    payload: IVaccineRegistration
+  ): Promise<Partial<IVaccineRegistrationResponse>> => {
+    try {
+      const response = await axiosInstanceToken.post(
+        'vaccine-registrations',
+        payload
+      );
+      return response.data;
+    } catch (error: any) {
+      alert(error.response.data.message);
+      return error.response.data.message;
+    }
   }
 );
 
 const initialState: IVaccineRegistrationState = {
-  vaccineRegistrationInfo: {
+  data: {
     id: 0,
-    userId: '',
-    group: '',
-    cardInsurance: '',
+    userId: 0,
+    groupId: 0,
+    insurranceCard: '',
     job: '',
-    workplace: '',
+    workPlace: '',
     address: '',
-    time: '',
     shift: '',
     status: 1
   },
@@ -47,17 +58,16 @@ export const RegistrationVaccineSlice = createSlice({
       })
       .addCase(registrationAsync.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        saveLocalStorage('vaccineRegistration', action.payload);
-        state.vaccineRegistrationInfo = action.payload;
+        state.data = action.payload;
         state.loading = false;
       })
-      .addCase(registrationAsync.rejected, (state) => {
+      .addCase(registrationAsync.rejected, (state, payload) => {
         state.status = 'failed';
         state.loading = false;
       });
   }
 });
 
-export const selectInfoRegistration = (state: RootState) =>
-  state.registrationVaccine.vaccineRegistrationInfo;
+export const selectRegistration = (state: RootState) =>
+  state.registrationVaccine.data;
 export default RegistrationVaccineSlice.reducer;

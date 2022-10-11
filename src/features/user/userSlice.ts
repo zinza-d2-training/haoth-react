@@ -1,26 +1,21 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
 import { saveLocalStorage } from '../../utils/localStorage';
-import { IResponseLogin, IUser, IUserLogin } from '../../interfaces/interface';
+import { IResponseLogin, IUserLogin } from '../../interfaces/interface';
 import { axioInstance } from '../../utils/request/httpRequest';
 export interface UserState {
-  info?: Partial<IUser>;
   token?: string;
   isFetching: boolean;
   error: boolean;
 }
 const initialState: UserState = {
-  info: {},
   token: '',
   isFetching: false,
   error: false
 };
 export const loginAsync = createAsyncThunk(
   'user/fetchLogin',
-  async (
-    payload: IUserLogin,
-    { rejectWithValue }
-  ): Promise<IResponseLogin | unknown> => {
+  async (payload: IUserLogin): Promise<IResponseLogin> => {
     try {
       const response = await axioInstance.post<IResponseLogin>(
         'auth/login',
@@ -28,7 +23,7 @@ export const loginAsync = createAsyncThunk(
       );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response.data.message);
+      throw new Error(error.response.data.message);
     }
   }
 );
@@ -43,12 +38,10 @@ export const UserSlice = createSlice({
         state.isFetching = true;
         state.error = false;
       })
-      .addCase(loginAsync.fulfilled, (state, action: any) => {
+      .addCase(loginAsync.fulfilled, (state, action) => {
         saveLocalStorage('token', action.payload.token);
-        saveLocalStorage('user', action.payload.user);
         state.error = false;
         state.token = action.payload.token;
-        state.info = action.payload.user;
         state.isFetching = false;
       })
       .addCase(loginAsync.rejected, (state) => {
@@ -57,8 +50,6 @@ export const UserSlice = createSlice({
       });
   }
 });
-
-export const selectUser = (state: RootState) => state.user.info;
 export const selectToken = (state: RootState) => state.user.token;
 export const selectError = (state: RootState) => state.user.error;
 export const selectIsFetching = (state: RootState) => state.user.isFetching;

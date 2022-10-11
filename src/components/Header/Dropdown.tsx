@@ -129,7 +129,7 @@ export default function CustomizedMenus() {
           </Li>
         </MenuItem>
         <MenuItem onClick={handleClose} disableRipple>
-          <Li to={'/'}>
+          <Li to={'/registration-step-3'}>
             <Icon src={peopleAlt2} alt="People" />
             <Title>
               <Typography variant="body1">Tra cứu kết quả đăng kí</Typography>

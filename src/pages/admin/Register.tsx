@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import {
+  Autocomplete,
   Button,
   Dialog,
   DialogContent,
@@ -25,11 +26,16 @@ import {
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { IVaccineRegistrationInfo } from '../../interfaces';
-import { listVaccineRegistration } from '../../data/fake';
 import { TransitionProps } from '@mui/material/transitions';
-import { fetchUser } from '../../features/user/userAPI';
-import { formatDate } from '../../utils/formatTime';
+import {
+  ISite,
+  IVaccine,
+  IVaccineRegistrationResponse
+} from '../../interfaces/interface';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import { format } from '../../utils/formatTime';
+import { SHIFT } from '../../enum/shift.enum';
+import { STATUS as ESTATUS } from '../../enum/status.enum';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -145,7 +151,7 @@ const columns: GridColDef[] = [
     minWidth: 200,
     headerAlign: 'center',
     align: 'center',
-    valueGetter: (params: GridValueGetterParams) => params.row.infoUser.name
+    valueGetter: (params: GridValueGetterParams) => params.row.user.name
   },
   {
     field: 'birthday',
@@ -153,16 +159,16 @@ const columns: GridColDef[] = [
     minWidth: 150,
     headerAlign: 'center',
     align: 'center',
-    valueGetter: (params: GridValueGetterParams) =>
-      formatDate(params.row.infoUser.birthday)
+    valueGetter: (params: GridValueGetterParams) => params.row.user.birthday
   },
   {
-    field: 'cardInsurance',
+    field: 'identifyCard',
     headerName: 'Số CMND/CCCD/Mã định danh công dân',
     type: 'string',
     minWidth: 200,
     headerAlign: 'center',
-    align: 'center'
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => params.row.user.identifyCard
   },
   {
     field: 'address',
@@ -179,7 +185,7 @@ const columns: GridColDef[] = [
     type: 'string',
     headerAlign: 'center',
     align: 'center',
-    valueGetter: (params: GridValueGetterParams) => formatDate(params.row.time)
+    valueGetter: (params: GridValueGetterParams) => params.row.time
   },
   {
     field: 'shift',
@@ -187,7 +193,15 @@ const columns: GridColDef[] = [
     type: 'string',
     minWidth: 200,
     headerAlign: 'center',
-    align: 'center'
+    align: 'center',
+    valueGetter: (params: GridValueGetterParams) => {
+      const shitf = params.row.shift;
+      return shitf === SHIFT.BOTH
+        ? 'Cả ngày'
+        : shitf === SHIFT.AFTERNOON
+        ? 'Buổi chiều'
+        : 'Buổi sáng';
+    }
   },
   {
     field: 'status',
@@ -196,8 +210,14 @@ const columns: GridColDef[] = [
     minWidth: 200,
     headerAlign: 'center',
     align: 'center',
-    valueGetter: (params: GridValueGetterParams) =>
-      params.row.status === 1 ? 'Thành công' : 'Thất bại'
+    valueGetter: (params: GridValueGetterParams) => {
+      const status: number = params.row.status;
+      return status === ESTATUS.SUCCESS
+        ? 'Thành công'
+        : status === ESTATUS.COMPLETED
+        ? 'Đã tiêm'
+        : 'Hủy';
+    }
   }
 ];
 function CustomPagination() {
@@ -220,11 +240,17 @@ function CustomPagination() {
 interface IFormEdit {
   id: number;
   name: string;
-  birthday: string;
-  cardInsurance: string;
+  identifyCard: string;
   address: string;
-  time: string;
-  shift: string;
+  time: Date;
+  shiftName: string;
+  shift: number;
+  vaccineId: number;
+  vaccine: string;
+  siteId: number;
+  site: string;
+  status: number;
+  statusName: string;
 }
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -234,80 +260,185 @@ const Transition = React.forwardRef(function Transition(
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
+type IStatus = {
+  id: number;
+  name: string;
+};
+const STATUS: IStatus[] = [
+  {
+    id: 0,
+    name: 'Hủy'
+  },
+  {
+    id: 1,
+    name: 'Thành công'
+  },
+  {
+    id: 2,
+    name: 'Đã tiêm'
+  }
+];
 const Register = () => {
   const [edit, setEdit] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
   const [address, setAddress] = useState<string>('');
+  const [sites, setSites] = useState<ISite[]>([]);
+  const [vaccines, setVaccines] = useState<IVaccine[]>([]);
+  const [siteSelect, setSiteSelect] = useState<ISite>();
+  const [vaccineSelect, setVaccineSelect] = useState<IVaccine>();
+  const [statusSelect, setStatusSelect] = useState<IStatus>();
+  const [totalRegisters, setTotalRegisters] = useState<
+    IVaccineRegistrationResponse[]
+  >([]);
+  const [vaccineRegisters, setVaccineRegisters] = useState<
+    IVaccineRegistrationResponse[]
+  >([]);
   const [rowSelected, setRowSelected] =
-    useState<Partial<IVaccineRegistrationInfo>>();
-  const [initData, setInitData] = useState<IVaccineRegistrationInfo[]>();
-  const [listData, setListData] = useState<IVaccineRegistrationInfo[]>();
+    useState<IVaccineRegistrationResponse | null>();
   const [open, setOpen] = React.useState<boolean>(false);
   const { watch, register, handleSubmit, setValue } = useForm<IFormEdit>({
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      statusName: '',
+      vaccine: '',
+      site: ''
+    }
   });
+  const vaccineId = watch('vaccineId');
+  const siteId = watch('siteId');
   useEffect(() => {
-    const res = listVaccineRegistration.map((item) => {
-      const info = fetchUser(item?.userId);
-      item = {
-        ...item,
-        infoUser: info
-      };
-      return item;
-    }) as IVaccineRegistrationInfo[];
-    setListData(res);
-    setInitData(res);
+    const fetchData = async () => {
+      try {
+        const res = await axiosInstanceToken.get<
+          IVaccineRegistrationResponse[]
+        >('vaccine-registrations');
+        setVaccineRegisters(res.data);
+        setTotalRegisters(res.data);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    const fetchSites = async () => {
+      try {
+        const res = await axiosInstanceToken.get<ISite[]>('sites');
+        setSites(res.data);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    const fetchVaccines = async () => {
+      try {
+        const res = await axiosInstanceToken.get<IVaccine[]>('vaccines');
+        setVaccines(res.data);
+      } catch (error) {
+        throw new Error();
+      }
+    };
+    fetchData();
+    fetchSites();
+    fetchVaccines();
   }, []);
-  useEffect(() => {
-    setValue('id', rowSelected?.id as number);
-    setValue('name', rowSelected?.infoUser?.name as string);
-    setValue('address', rowSelected?.address as string);
-    setValue('cardInsurance', rowSelected?.cardInsurance as string);
-    setValue('time', formatDate(rowSelected?.time as string) as string);
-    setValue('birthday', formatDate(rowSelected?.infoUser?.birthday as string));
-  }, [rowSelected, setValue]);
-  useEffect(() => {
-    if (initData) {
-      if (name === '' && address === '') {
-        setListData(initData);
+  const setData = useCallback(() => {
+    if (rowSelected) {
+      const data = rowSelected;
+      if (data.vaccineId) {
+        const vaccine = vaccines.find((item) => item.id === data.vaccineId);
+        if (vaccine) {
+          setValue('vaccine', vaccine?.name + '-' + vaccine?.code);
+          setValue('vaccineId', vaccine?.id);
+        }
+      } else {
+        setValue('vaccine', '');
+        setValue('vaccineId', 0);
+      }
+      if (data.siteId) {
+        const site = sites.find((item) => item.id === data.siteId);
+        if (site) {
+          setValue('site', site?.name + '-' + site.ward?.name);
+          setValue('siteId', site.id);
+        }
+      } else {
+        setValue('site', '');
+        setValue('siteId', 0);
+      }
+      setValue('id', data.id);
+      setValue('name', data?.user?.name as string);
+      setValue('address', data?.address as string);
+      setValue('identifyCard', data?.user?.identifyCard as string);
+      setValue('time', data.time);
+      const status = STATUS.find((item) => item.id === data.status);
+      if (status) {
+        setValue('statusName', status.name);
+        setValue('status', status.id);
       }
     }
-  }, [name, address, initData]);
+  }, [rowSelected, setValue, sites, vaccines]);
+  useEffect(() => {
+    if (rowSelected) {
+      setData();
+    }
+  }, [rowSelected, setData]);
+  useEffect(() => {
+    if (siteSelect) {
+      setValue('site', siteSelect.name + '-' + siteSelect.ward?.name);
+      setValue('siteId', siteSelect.id);
+    }
+  }, [siteSelect, setValue]);
+  useEffect(() => {
+    if (vaccineSelect) {
+      setValue('vaccine', vaccineSelect.name + '-' + vaccineSelect.code);
+      setValue('vaccineId', vaccineSelect.id);
+    }
+  }, [vaccineSelect, setValue]);
+  useEffect(() => {
+    if (statusSelect) {
+      setValue('statusName', statusSelect.name);
+      setValue('status', statusSelect.id);
+    }
+  }, [statusSelect, setValue]);
 
-  const handleClickOpen = (param: Partial<IVaccineRegistrationInfo>) => {
-    setRowSelected(param);
+  useEffect(() => {
+    if (vaccineId && siteId) {
+      setStatusSelect(STATUS[2]);
+    }
+  }, [vaccineId, siteId]);
+
+  const handleClickOpen = (raw: IVaccineRegistrationResponse) => {
+    setRowSelected(raw);
     setOpen(true);
   };
 
   const handleClose = () => {
+    setEdit(false);
     setOpen(false);
   };
   const onSubmitSearch = () => {
-    if (initData) {
-      const res = initData
+    if (totalRegisters) {
+      const res = totalRegisters
         .filter((item) => {
-          return item.infoUser?.name?.includes(name);
+          return item.address?.includes(address);
         })
         .filter((item) => {
-          return item.address.includes(address);
+          return item.user?.name?.includes(name);
         });
-      setListData(res);
+      setVaccineRegisters(res);
     }
   };
-  const onUpdateSubmit: SubmitHandler<Partial<IVaccineRegistrationInfo>> = (
-    data
-  ) => {
-    const result = listData?.map((item) => {
-      if (item.id === data.id) {
-        item = {
-          ...item,
-          ...data
-        };
-      }
-      return item;
-    });
-    setListData(result);
-    setOpen(false);
+  const onUpdateSubmit: SubmitHandler<IFormEdit> = async (data) => {
+    const { siteId, vaccineId, status, time, address, id } = data;
+    const update = { siteId, vaccineId, status, time, address };
+    try {
+      const res = await axiosInstanceToken.patch<IVaccineRegistrationResponse>(
+        `http://localhost:5000/vaccine-registrations/${id}`,
+        update
+      );
+      const data = vaccineRegisters.filter((item) => item.id !== res.data.id);
+      setVaccineRegisters(data);
+      setTotalRegisters(data);
+      handleClose();
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
   };
   return (
     <Wrapper>
@@ -342,11 +473,11 @@ const Register = () => {
           <DataGrid
             disableColumnMenu
             onRowClick={(param) =>
-              handleClickOpen(param.row as Partial<IVaccineRegistrationInfo>)
+              handleClickOpen(param.row as IVaccineRegistrationResponse)
             }
             autoPageSize
             autoHeight
-            rows={listData || []}
+            rows={vaccineRegisters}
             columns={columns}
             pageSize={10}
             rowsPerPageOptions={[10]}
@@ -400,21 +531,11 @@ const Register = () => {
                       </FormControl>
                     </Input>
                     <Input>
-                      <Typography>Ngày sinh</Typography>
-                      <FormControl fullWidth>
-                        <TextField
-                          inputProps={{ readOnly: true }}
-                          {...register('birthday')}
-                          size="small"
-                        />
-                      </FormControl>
-                    </Input>
-                    <Input>
                       <Typography>Số CMND/CCCD</Typography>
                       <FormControl fullWidth>
                         <TextField
-                          inputProps={{ readOnly: !edit }}
-                          {...register('cardInsurance')}
+                          inputProps={{ readOnly: true }}
+                          {...register('identifyCard')}
                           size="small"
                         />
                       </FormControl>
@@ -443,21 +564,93 @@ const Register = () => {
                                 size: 'small'
                               }}
                               readOnly={!edit}
-                              disablePast
-                              openTo="year"
+                              // openTo="year"
                               views={['year', 'month', 'day']}
-                              {...register('time')}
                               value={watch('time')}
                               onChange={(date: any) => {
-                                setValue('time', date.$d);
+                                setValue('time', format(date));
                               }}
-                              renderInput={(params: any) => {
-                                return <TextField {...params} />;
+                              renderInput={(params) => {
+                                return (
+                                  <TextField
+                                    {...register('time')}
+                                    {...params}
+                                  />
+                                );
                               }}
                             />
                           </LocalizationProvider>
                         </Stack>
                       </FormControl>
+                    </Input>
+                    <Input>
+                      <Typography>Địa điểm tiêm</Typography>
+                      <Autocomplete
+                        fullWidth
+                        readOnly={!edit}
+                        options={sites}
+                        getOptionLabel={(option) =>
+                          option.name + '-' + option.ward?.name
+                        }
+                        onChange={(event, value) =>
+                          setSiteSelect(value as ISite)
+                        }
+                        inputValue={watch('site')}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...register('site')}
+                            size="small"
+                            placeholder="Địa điểm tiêm"
+                          />
+                        )}
+                      />
+                    </Input>
+                    <Input>
+                      <Typography>Vaccine</Typography>
+                      <Autocomplete
+                        fullWidth
+                        readOnly={!edit}
+                        disablePortal
+                        options={vaccines}
+                        getOptionLabel={(option) =>
+                          option.name + '-' + option.code
+                        }
+                        onChange={(event, value) =>
+                          setVaccineSelect(value as IVaccine)
+                        }
+                        inputValue={watch('vaccine')}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...register('vaccine')}
+                            size="small"
+                            placeholder="Địa điểm tiêm"
+                          />
+                        )}
+                      />
+                    </Input>
+                    <Input>
+                      <Typography>Trạng thái</Typography>
+                      <Autocomplete
+                        fullWidth
+                        readOnly={!edit}
+                        disablePortal
+                        options={STATUS}
+                        getOptionLabel={(option) => option.name}
+                        inputValue={watch('statusName')}
+                        onChange={(event, value) => {
+                          setStatusSelect(value as IStatus);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            {...register('statusName')}
+                            size="small"
+                            placeholder="Trang thai"
+                          />
+                        )}
+                      />
                     </Input>
                   </BodyForm>
                   {edit && (

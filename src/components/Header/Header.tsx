@@ -2,9 +2,12 @@ import React from 'react';
 import styled from '@emotion/styled';
 import { Logo as imgLogo } from '../../assets/images';
 import { Button, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { useLocalStorage } from '../../hooks';
+import { Link, useNavigate } from 'react-router-dom';
 import CustomizedMenus from './Dropdown';
+import { useAppDispatch, useAppSelector } from '../../app';
+import { logout, selectUser } from '../../features/auth/authSlice';
+import { useLogin } from '../../hooks/useLogin';
+import { Logout } from '@mui/icons-material';
 const Wrapper = styled.div`
   position: fixed;
   top: 0;
@@ -97,7 +100,14 @@ const TitleBtn = styled.span`
 `;
 
 const Header = () => {
-  const [currentUser] = useLocalStorage('user', '');
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const currentUser = useAppSelector(selectUser);
+  const isLogin = useLogin();
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+  };
   return (
     <Wrapper>
       <Container>
@@ -132,14 +142,19 @@ const Header = () => {
               Tài liệu
             </Typography>
           </LinkHeader>
-          {!!currentUser ? (
-            <MenuItem>{currentUser?.email}</MenuItem>
+          {isLogin ? (
+            <MenuItem>{currentUser?.name}</MenuItem>
           ) : (
             <LinkHeader to={'/login'}>
               <ButtonLogin>
                 <TitleBtn>Đăng nhập</TitleBtn>
               </ButtonLogin>
             </LinkHeader>
+          )}
+          {isLogin && (
+            <ButtonLogin onClick={handleLogout} endIcon={<Logout />}>
+              <TitleBtn>Đăng xuất</TitleBtn>
+            </ButtonLogin>
           )}
         </Menu>
       </Container>

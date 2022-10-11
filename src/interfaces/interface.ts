@@ -16,6 +16,7 @@ export interface IUser {
   tokenResetPassword: string;
   createdAt: Date;
   updatedAt: Date;
+  ward?: IWard;
 }
 
 export interface IUserRegister {
@@ -29,7 +30,6 @@ export interface IUserRegister {
 }
 
 export interface IResponseLogin {
-  user: Partial<IUser>;
   token: string;
 }
 
@@ -63,4 +63,63 @@ export interface ILocation {
   leader: string;
   table: number;
   ward?: IWard;
+}
+export interface IGroup {
+  id: number;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface Shift {
+  id: number;
+  name: string;
+}
+
+export interface IVaccineRegistrationResponse {
+  id: number;
+  code: string;
+  userId: number;
+  groupId: number;
+  insurranceCard: string;
+  job: string;
+  workPlace: string;
+  address: string;
+  time: Date;
+  shift: string;
+  status: number;
+  createdAt: Date;
+  updatedAt: Date;
+  vaccineId: number;
+  siteId: number;
+  user?: Partial<IUser>;
+}
+export interface IVaccineRegistration {
+  userId: number;
+  groupId: number;
+  insurranceCard: string;
+  job: string;
+  workPlace: string;
+  address: string;
+  time: Date;
+  shift: string;
+  status: number;
+}
+
+export interface ISite {
+  id: number;
+  wardId: number;
+  name: string;
+  address: string;
+  leader: string;
+  table: number;
+  createdAt: Date;
+  updatedAt: Date;
+  ward?: Partial<IWard>;
+}
+export interface IVaccine {
+  id: number;
+  name: string;
+  code: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
