@@ -24,7 +24,11 @@ export const fetchUserLogin = createAsyncThunk(
     { rejectWithValue }
   ): Promise<{ user: Partial<IUser>; isAdmin: boolean }> => {
     try {
-      const response = await axioInstance.get(`auth?token=${token}`);
+      const response = await axioInstance.get(`auth/user`, {
+        params: {
+          token: token
+        }
+      });
       return response.data;
     } catch (error: any) {
       throw new Error();

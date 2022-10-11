@@ -34,6 +34,8 @@ import {
 } from '../../interfaces/interface';
 import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { format } from '../../utils/formatTime';
+import { SHIFT } from '../../enum/shift.enum';
+import { STATUS as ESTATUS } from '../../enum/status.enum';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -194,7 +196,11 @@ const columns: GridColDef[] = [
     align: 'center',
     valueGetter: (params: GridValueGetterParams) => {
       const shitf = params.row.shift;
-      return shitf === 2 ? 'Cả ngày' : shitf === 1 ? 'Buổi chiều' : 'Buổi sáng';
+      return shitf === SHIFT.BOTH
+        ? 'Cả ngày'
+        : shitf === SHIFT.AFTERNOON
+        ? 'Buổi chiều'
+        : 'Buổi sáng';
     }
   },
   {
@@ -206,7 +212,11 @@ const columns: GridColDef[] = [
     align: 'center',
     valueGetter: (params: GridValueGetterParams) => {
       const status: number = params.row.status;
-      return status === 1 ? 'Thành công' : status === 2 ? 'Đã tiêm' : 'Hủy';
+      return status === ESTATUS.SUCCESS
+        ? 'Thành công'
+        : status === ESTATUS.COMPLETED
+        ? 'Đã tiêm'
+        : 'Hủy';
     }
   }
 ];

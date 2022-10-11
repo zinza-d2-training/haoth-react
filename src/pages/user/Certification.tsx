@@ -13,6 +13,7 @@ import { selectUser } from '../../features/auth/authSlice';
 import { useAccessToken } from '../../hooks/useAccessToken';
 import { IVaccineRegistrationResponse } from '../../interfaces/interface';
 import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import { STATUS } from '../../enum/status.enum';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -174,11 +175,9 @@ const columns: GridColDef[] = [
     valueGetter: (params: GridValueGetterParams) => params.row.site.name
   }
 ];
-
-const STATUS: number = 2;
 const Certification = () => {
   const currentUser = useAppSelector(selectUser);
-  const token = useAccessToken();
+  const token: string = useAccessToken();
   const [vaccineRegisters, setVaccineRegisters] = useState<
     IVaccineRegistrationResponse[]
   >([]);
@@ -187,7 +186,12 @@ const Certification = () => {
       try {
         const res = await axiosInstanceToken.get<
           IVaccineRegistrationResponse[]
-        >(`vaccine-registrations/users?token=${token}&status=${STATUS}`);
+        >('vaccine-registrations/users', {
+          params: {
+            token: token,
+            status: STATUS.COMPLETED
+          }
+        });
         setVaccineRegisters(res.data);
       } catch (error: any) {
         throw new Error(error.response.data.message);

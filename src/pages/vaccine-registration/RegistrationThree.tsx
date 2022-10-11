@@ -12,6 +12,8 @@ import { selectUser } from '../../features/auth/authSlice';
 import { IVaccineRegistrationResponse } from '../../interfaces/interface';
 import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { useAccessToken } from '../../hooks/useAccessToken';
+import { STATUS } from '../../enum/status.enum';
+import { GENDER } from '../../enum/gender.enum';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -94,7 +96,6 @@ const Continue = styled(Button)`
     color: #ffffff;
   }
 `;
-const STATUS: number = 1;
 const RegistrationThree = () => {
   const currentUser = useAppSelector(selectUser);
   const token = useAccessToken();
@@ -104,7 +105,13 @@ const RegistrationThree = () => {
     const fetchNewRegister = async () => {
       try {
         const res = await axiosInstanceToken.get<IVaccineRegistrationResponse>(
-          `vaccine-registrations/users?token=${token}&status=${STATUS}`
+          `vaccine-registrations/users`,
+          {
+            params: {
+              token: token,
+              status: STATUS.SUCCESS
+            }
+          }
         );
         if (res) {
           setVaccineRegister(res.data);
@@ -130,26 +137,43 @@ const RegistrationThree = () => {
     <Wrapper>
       <Heading />
       <Container>
-        <StepCheck currentStep={4} />
+        {vaccineRegister && <StepCheck currentStep={4} />}
         <Form>
           <Pdf id="export-pdf">
             <HeaderText>
               <Code>
-                <Typography variant="h6" component={'h6'}>
-                  Đăng ký tiêm chủng COVID-19 thành công. Mã đặt tiêm của bạn
-                  là: <CodeStrong>{vaccineRegister?.code}</CodeStrong>.
-                </Typography>
+                {vaccineRegister ? (
+                  <Typography variant="h6" component={'h6'}>
+                    Đăng ký tiêm chủng COVID-19 thành công. Mã đặt tiêm của bạn
+                    là: <CodeStrong>{vaccineRegister?.code}</CodeStrong>.
+                  </Typography>
+                ) : (
+                  <>
+                    <Typography variant="h6">Bạn chưa đăng ký tiêm</Typography>
+                    <Link
+                      style={{ textDecoration: 'none', marginLeft: '10px' }}
+                      to={'/registration-step-1'}>
+                      <Cancel startIcon={<ArrowForward />}>
+                        <Typography sx={{ fontWeight: 500 }}>
+                          Đăng ký tiêm
+                        </Typography>
+                      </Cancel>
+                    </Link>
+                  </>
+                )}
               </Code>
-              <Code>
-                <Typography variant="body1" component={'span'}>
-                  Cảm ơn quý khách đã đăng ký tiêm chủng vắc xin COVID-19. Hiện
-                  tại Bộ y tế đang tiến hành thu thập nhu cầu và thông tin để
-                  lập danh sách đối tượng đăng ký tiêm vắc xin COVID-19 theo
-                  từng địa bàn. Chúng tôi sẽ liên hệ với quý khách theo số điện
-                  thoại 0123456789 khi có kế hoạch tiêm trong thời gian sớm
-                  nhất.
-                </Typography>
-              </Code>
+              {vaccineRegister && (
+                <Code>
+                  <Typography variant="body1" component={'span'}>
+                    Cảm ơn quý khách đã đăng ký tiêm chủng vắc xin COVID-19.
+                    Hiện tại Bộ y tế đang tiến hành thu thập nhu cầu và thông
+                    tin để lập danh sách đối tượng đăng ký tiêm vắc xin COVID-19
+                    theo từng địa bàn. Chúng tôi sẽ liên hệ với quý khách theo
+                    số điện thoại 0123456789 khi có kế hoạch tiêm trong thời
+                    gian sớm nhất.
+                  </Typography>
+                </Code>
+              )}
               <Code>
                 <Typography variant="body1" component={'span'}>
                   Mời bạn tải ứng dụng "SỔ SỨC KHỎE ĐIỆN TỬ" tại{' '}
@@ -178,9 +202,9 @@ const RegistrationThree = () => {
                 <Col>
                   <Typography variant="body1">Giới tính</Typography>
                   <Typography fontWeight={500} variant="body1">
-                    {currentUser?.gender === 0
+                    {currentUser?.gender === GENDER.FEMALE
                       ? 'Nữ'
-                      : currentUser?.gender === 1
+                      : currentUser?.gender === GENDER.MALE
                       ? 'Nam'
                       : 'Other'}
                   </Typography>
@@ -230,9 +254,11 @@ const RegistrationThree = () => {
                 <Typography sx={{ fontWeight: 500 }}>Trang chủ</Typography>
               </Cancel>
             </Link>
-            <Continue onClick={exportPDF} startIcon={<ArrowForward />}>
-              <Typography sx={{ fontWeight: 500 }}>Xuất thông tin</Typography>
-            </Continue>
+            {vaccineRegister && (
+              <Continue onClick={exportPDF} startIcon={<ArrowForward />}>
+                <Typography sx={{ fontWeight: 500 }}>Xuất thông tin</Typography>
+              </Continue>
+            )}
           </Submit>
         </Form>
       </Container>
