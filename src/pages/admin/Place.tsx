@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Location from './Location';
 import Register from './Register';
 import Document from './Document';
+import Account from './Account';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -101,6 +102,19 @@ const Place = () => {
               label="Tài liệu"
               {...a11yProps(2)}
             />
+            <Tab
+              sx={{
+                '&.MuiTab-root': {
+                  textTransform: 'none',
+                  fontSize: '16px'
+                },
+                '&.Mui-selected': {
+                  color: 'rgba(0, 0, 0, 0.87)'
+                }
+              }}
+              label="Account"
+              {...a11yProps(3)}
+            />
           </Tabs>
         </Container>
       </Box>
@@ -112,6 +126,9 @@ const Place = () => {
       </TabPanel>
       <TabPanel value={value} index={2}>
         <Document />
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <Account />
       </TabPanel>
     </Wrapper>
   );

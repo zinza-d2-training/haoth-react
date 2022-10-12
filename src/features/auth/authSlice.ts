@@ -17,6 +17,7 @@ const initialState: AuthState = {
   isFetching: false,
   error: false
 };
+
 export const fetchUserLogin = createAsyncThunk(
   'user/verify',
   async (
@@ -45,6 +46,9 @@ export const AuthSlice = createSlice({
       state.user = {};
       state.isAdmin = false;
       state.isLogin = false;
+    },
+    updateUser: (state, action) => {
+      state.user = action.payload.data;
     }
   },
   extraReducers: (builder) => {
@@ -72,5 +76,5 @@ export const AuthSlice = createSlice({
 export const selectUser = (state: RootState) => state.auth.user;
 export const selectIsAdmin = (state: RootState) => state.auth.isAdmin;
 export const selectIsLogin = (state: RootState) => state.auth.isLogin;
-export const { logout } = AuthSlice.actions;
+export const { logout, updateUser } = AuthSlice.actions;
 export default AuthSlice.reducer;
