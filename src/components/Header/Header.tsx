@@ -143,7 +143,9 @@ const Header = () => {
             </Typography>
           </LinkHeader>
           {isLogin ? (
-            <MenuItem>{currentUser?.name}</MenuItem>
+            <Link to={'/user/account'}>
+              <MenuItem>{currentUser?.name}</MenuItem>
+            </Link>
           ) : (
             <LinkHeader to={'/login'}>
               <ButtonLogin>

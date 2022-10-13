@@ -625,7 +625,7 @@ const Register = () => {
                             {...params}
                             {...register('vaccine')}
                             size="small"
-                            placeholder="Địa điểm tiêm"
+                            placeholder="Vaccine"
                           />
                         )}
                       />

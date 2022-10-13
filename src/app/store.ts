@@ -2,9 +2,7 @@ import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import {
   userReducer,
   forgotPasswordReducer,
-  registrationVaccineReducer,
-  updateInformationReducer,
-  updatePasswordReducer
+  registrationVaccineReducer
 } from '../features/user/';
 import { authReducer } from '../features/auth';
 import { documentReducer } from '../features/document';
@@ -14,8 +12,6 @@ export const store = configureStore({
     user: userReducer,
     forgotPassword: forgotPasswordReducer,
     registrationVaccine: registrationVaccineReducer,
-    updateInformation: updateInformationReducer,
-    updatePassword: updatePasswordReducer,
     document: documentReducer,
     location: locationReducer,
     auth: authReducer

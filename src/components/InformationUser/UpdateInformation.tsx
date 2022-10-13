@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import {
   Autocomplete,
   Button,
   FormControl,
-  MenuItem,
-  Select,
   Stack,
   TextField,
   Typography
@@ -13,14 +11,17 @@ import {
 import { SubmitHandler, useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { listProvinces, listDistricts, listWards } from '../../data/fake';
-import { IDistrict, IProvince, IWard } from '../../interfaces';
-import { useLocalStorage } from '../../hooks';
+import { IDistrict, IProvince, IWard } from '../../interfaces/interface';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { useAppDispatch } from '../../app';
-import { updateInformationAsync } from '../../features/user/updateInforSlice';
+import { useAppDispatch, useAppSelector } from '../../app';
+import { selectUser, updateUser } from '../../features/auth/authSlice';
+import { IUser } from '../../interfaces/interface';
+import * as areaService from '../../services/areaService';
+import { format } from '../../utils/formatTime';
+import { useAccessToken } from '../../hooks/useAccessToken';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -66,40 +67,67 @@ const Save = styled(Button)`
   color: #ffffff;
 `;
 
+interface IFormData {
+  id: number;
+  identifyCard: string;
+  name: string;
+  birthday: Date;
+  gender: number;
+  genderName: string;
+  provinceId: number;
+  province: string;
+  districtId: number;
+  district: string;
+  wardId: number;
+  ward: string;
+}
 const schema = yup
   .object({
     name: yup.string().required('Tên không được để trống').trim(),
-    birthday: yup.string().required().trim(),
-    card: yup
+    identifyCard: yup
       .string()
       .required('CCCD là bắt buộc')
       .matches(/^[0-9]+$/, 'CMND phải là dạng số ')
       .matches(/^(\d{9}|\d{12})$/, 'CMND chỉ chứa 9 hoặc 12 số'),
-    gender: yup.string().required(),
-    province: yup.string().required().trim(),
-    district: yup.string().required().trim(),
-    ward: yup.string().required().trim()
+    gender: yup.number().required(),
+    genderName: yup.string().required('Giới tính không để trống'),
+    province: yup.string().required().trim('Tỉnh không để trống'),
+    district: yup.string().required().trim('Huyện không để trống'),
+    ward: yup.string().required().trim('Xã không để trống'),
+    wardId: yup.number().required().min(1),
+    id: yup.number().required()
   })
   .required();
-interface IFormData {
-  card: string;
-  name: string;
-  birthday: string;
-  gender: string;
-  province: string;
-  district: string;
-  ward: string;
-}
 interface EditProps {
   edit?: boolean;
 }
+interface IGender {
+  id: number;
+  name: string;
+}
+const genders: IGender[] = [
+  {
+    id: 0,
+    name: 'Nữ'
+  },
+  {
+    id: 1,
+    name: 'Nam'
+  },
+  {
+    id: 2,
+    name: 'Other'
+  }
+];
 const UpdateInformation: React.FC<EditProps> = (props) => {
+  const token = useAccessToken();
   const dispatch = useAppDispatch();
-  const [user] = useLocalStorage('user', '');
+  const currentUser: Partial<IUser> = useAppSelector(selectUser);
   const [provinceSelect, setProvinceSelect] = useState<IProvince>();
   const [districtSelect, setDistrictSelect] = useState<IDistrict>();
   const [wardSelect, setWardSelect] = useState<IWard>();
-  const [provinces] = useState<IProvince[]>(listProvinces);
+  const [genderSelect, setGenderSelect] = useState<IGender>();
+  const [provinces, setProvinces] = useState<IProvince[]>([]);
   const [districts, setDistricts] = useState<IDistrict[]>([]);
   const [wards, setWards] = useState<IWard[]>([]);
   const {
@@ -108,74 +136,149 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
     watch,
     setValue,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm<IFormData>({
     resolver: yupResolver(schema),
     mode: 'onChange',
     defaultValues: {
-      card: user?.card,
-      gender: user?.gender,
-      birthday: user?.birthday,
-      province: user?.province,
-      district: user?.district,
-      ward: user?.ward
+      name: currentUser.name,
+      identifyCard: currentUser.identifyCard,
+      province: currentUser.ward?.district?.province?.name,
+      provinceId: currentUser.ward?.district?.province?.id,
+      district: currentUser.ward?.district?.name,
+      districtId: currentUser.ward?.district?.id,
+      ward: currentUser.ward?.name,
+      birthday: currentUser?.birthday,
+      wardId: currentUser?.wardId,
+      id: currentUser?.id,
+      genderName: (function () {
+        const gender = genders.find((item) => item.id === currentUser.id);
+        return gender?.name;
+      })(),
+      gender: currentUser.gender
     }
   });
   const province = watch('province');
   const district = watch('district');
   const ward = watch('ward');
   useEffect(() => {
-    if (!!provinceSelect) {
+    const fetchProvinces = async () => {
+      const res = await areaService.findAllProvinces();
+      setProvinces(res);
+    };
+    fetchProvinces();
+  }, []);
+  useEffect(() => {
+    if (currentUser) {
+      const war = currentUser.ward as IWard;
+      const dis = war?.district as IDistrict;
+      const pro = war?.district?.province as IProvince;
+      setProvinceSelect(pro);
+      setDistrictSelect(dis);
+      setWardSelect(war);
+    }
+  }, [currentUser]);
+  const setData = useCallback(() => {
+    if (currentUser) {
+      const war = currentUser.ward as IWard;
+      const dis = war?.district as IDistrict;
+      const pro = war?.district?.province as IProvince;
+      setProvinceSelect(pro);
+      setDistrictSelect(dis);
+      setWardSelect(war);
+      setValue('birthday', currentUser.birthday as Date);
+      setValue('identifyCard', currentUser.identifyCard as string);
+      setValue('name', currentUser.name as string);
+      const gender = genders.find((item) => item.id === currentUser.gender);
+      if (gender) {
+        setValue('genderName', gender.name);
+        setValue('gender', gender.id);
+      }
+      setValue('ward', currentUser.ward?.name as string);
+      setValue('wardId', currentUser.wardId as number);
+      setValue('district', currentUser.ward?.district?.name as string);
+      setValue('districtId', currentUser.ward?.district?.id as number);
+      setValue(
+        'province',
+        currentUser.ward?.district?.province?.name as string
+      );
+      setValue(
+        'provinceId',
+        currentUser.ward?.district?.province?.id as number
+      );
+    }
+  }, [currentUser, setValue]);
+  useEffect(() => {
+    if (provinceSelect) {
       setValue('district', '');
       setValue('ward', '');
-      setValue('province', provinceSelect.label);
+      setValue('wardId', 0);
+      setValue('province', provinceSelect.name);
       setDistricts([]);
       setWards([]);
-      const data = listDistricts.filter(
-        (item: IDistrict) => item.province_code === provinceSelect.code
-      );
-      setDistricts(data);
+      const fetchDistricts = async () => {
+        try {
+          const districts = await areaService.findDistricts(provinceSelect.id);
+          setDistricts(districts);
+        } catch (error) {
+          throw new Error();
+        }
+      };
+      fetchDistricts();
     }
   }, [provinceSelect, setValue]);
   useEffect(() => {
-    if (!!districtSelect) {
-      setValue('district', districtSelect.label);
+    if (districtSelect) {
+      setValue('district', districtSelect.name);
       setValue('ward', '');
+      setValue('wardId', 0);
       setWards([]);
-      const data = listWards.filter(
-        (item: IWard) => item.district_code === districtSelect.code
-      );
-      setWards(data);
+      const fetchWards = async () => {
+        try {
+          const wards = await areaService.findWards(districtSelect.id);
+          setWards(wards);
+        } catch (error) {
+          throw new Error();
+        }
+      };
+      fetchWards();
     }
   }, [districtSelect, setValue]);
   useEffect(() => {
-    if (province === '') {
-      setValue('district', '');
-      setValue('ward', '');
-    }
-  }, [province, setValue]);
-  useEffect(() => {
-    if (district === '') {
-      setValue('ward', '');
-    }
-  }, [district, setValue]);
-  useEffect(() => {
-    if (!!wardSelect) {
-      setValue('ward', wardSelect.label);
+    if (wardSelect) {
+      setValue('wardId', wardSelect.id);
+      setValue('ward', wardSelect.name);
     }
   }, [wardSelect, setValue]);
+  useEffect(() => {
+    if (genderSelect) {
+      setValue('gender', genderSelect.id);
+      setValue('genderName', genderSelect.name);
+    }
+  }, [genderSelect, setValue]);
   const handleReset = () => {
-    setValue('name', user?.name);
-    setValue('card', user?.card);
-    setValue('birthday', user?.birthday);
-    setValue('gender', user?.gender);
-    setValue('province', user?.province);
-    setValue('district', user?.district);
-    setValue('ward', user?.ward);
+    setData();
   };
-  const onSubmit: SubmitHandler<IFormData> = (data) => {
-    dispatch(updateInformationAsync(data));
-    alert('Cap nhat thanh cong');
+  const onSubmit: SubmitHandler<IFormData> = async (data) => {
+    try {
+      const { id, name, identifyCard, gender, birthday, wardId } = data;
+      const payload = { name, identifyCard, gender, wardId, birthday };
+      const updated = await axiosInstanceToken.patch<Partial<IUser>>(
+        `users/only/${id}`,
+        payload,
+        {
+          params: {
+            token: token
+          }
+        }
+      );
+      if (updated) {
+        dispatch(updateUser(updated));
+        alert('Cap nhat thanh cong');
+      }
+    } catch (error: any) {
+      throw new Error(error.message, {});
+    }
   };
   return (
     <Wrapper>
@@ -188,11 +291,11 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
                 inputProps={{
                   readOnly: !props.edit
                 }}
-                {...register('card')}
-                error={!!errors.card}
-                helperText={errors.card?.message}
+                {...register('identifyCard')}
+                error={!!errors.identifyCard}
+                helperText={errors.identifyCard?.message}
                 size="small"
-                defaultValue={user?.card}
+                defaultValue={currentUser?.identifyCard}
               />
             </FormControl>
           </Component>
@@ -209,7 +312,7 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
                 helperText={errors.name?.message}
                 {...register('name')}
                 size="small"
-                defaultValue={user?.name}
+                defaultValue={currentUser?.name}
               />
             </FormControl>
           </Component>
@@ -232,9 +335,9 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
                         disableFuture
                         openTo="year"
                         views={['year', 'month', 'day']}
-                        value={field.value || user?.birthday}
+                        value={field.value || currentUser?.birthday}
                         onChange={(date: any) => {
-                          field.onChange(date ? date : '');
+                          setValue('birthday', format(date));
                         }}
                         renderInput={(params: any) => {
                           return <TextField {...params} size="small" />;
@@ -249,22 +352,25 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
           <Component>
             <Label>Giới tính</Label>
             <FormControl fullWidth>
-              <Controller
-                {...register('gender')}
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    readOnly={!props.edit}
+              <Autocomplete
+                readOnly={!props.edit}
+                disablePortal
+                options={genders}
+                defaultValue={genders.find(
+                  (item) => item.id === currentUser.gender
+                )}
+                onChange={(event, value) => {
+                  setGenderSelect(value as IGender);
+                }}
+                getOptionLabel={(option) => option.name}
+                isOptionEqualToValue={() => true}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    {...register('genderName')}
                     size="small"
-                    id="gender"
-                    defaultValue={'Nam'}
-                    {...field}
-                    onChange={(event) => {
-                      field.onChange(event.target.value);
-                    }}>
-                    <MenuItem value={'Nam'}>Nam</MenuItem>
-                    <MenuItem value={'Nữ'}>Nữ</MenuItem>
-                  </Select>
+                    placeholder="Giới tính"
+                  />
                 )}
               />
             </FormControl>
@@ -277,18 +383,21 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
               <Autocomplete
                 readOnly={!props.edit}
                 disablePortal
-                inputValue={province}
                 options={provinces}
+                inputValue={province}
+                defaultValue={currentUser.ward?.district?.province}
                 onChange={(event, value) =>
                   setProvinceSelect(value as IProvince)
                 }
+                getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={() => true}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     {...register('province')}
                     size="small"
-                    placeholder={user?.province}
+                    placeholder="Tỉnh/Thành phố"
+                    defaultValue={province}
                   />
                 )}
               />
@@ -302,16 +411,19 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
                 disablePortal
                 options={districts}
                 inputValue={district}
+                defaultValue={currentUser.ward?.district}
                 onChange={(event, value) =>
                   setDistrictSelect(value as IDistrict)
                 }
+                getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={() => true}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     {...register('district')}
                     size="small"
-                    placeholder={user?.district}
+                    placeholder="Quận/Huyện"
+                    defaultValue={district}
                   />
                 )}
               />
@@ -325,14 +437,16 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
                 readOnly={!props.edit || district === ''}
                 options={wards}
                 inputValue={ward}
+                defaultValue={currentUser.ward}
                 onChange={(event, value) => setWardSelect(value as IWard)}
+                getOptionLabel={(option) => option.name}
                 isOptionEqualToValue={() => true}
                 renderInput={(params) => (
                   <TextField
                     {...params}
                     {...register('ward')}
                     size="small"
-                    placeholder={user?.ward}
+                    placeholder="Xã/Phường"
                   />
                 )}
               />
@@ -344,7 +458,7 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
             <Cancel onClick={handleReset} type="reset">
               <Typography fontWeight={500}>Hủy bỏ</Typography>
             </Cancel>
-            <Save type="submit">
+            <Save disabled={!isValid} type="submit">
               <Typography fontWeight={500}>Lưu</Typography>
             </Save>
           </Row>

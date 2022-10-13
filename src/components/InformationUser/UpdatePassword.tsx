@@ -4,8 +4,10 @@ import { Button, FormControl, TextField, Typography } from '@mui/material';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useAppDispatch } from '../../app';
-import { updatePasswordAsync } from '../../features/user/updatePasswordSlice';
+import { useAppSelector } from '../../app';
+import { selectUser } from '../../features/auth/authSlice';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import { useAccessToken } from '../../hooks/useAccessToken';
 const Wrapper = styled.div`
   width: 100%;
   display: flex;
@@ -71,7 +73,8 @@ interface IFormData {
   verifyPassword: string;
 }
 const UpdatePassword = () => {
-  const dispatch = useAppDispatch();
+  const currentUser = useAppSelector(selectUser);
+  const token = useAccessToken();
   const {
     register,
     setValue,
@@ -81,11 +84,28 @@ const UpdatePassword = () => {
     resolver: yupResolver(schema),
     mode: 'onChange'
   });
-  const onSubmit: SubmitHandler<IFormData> = (data) => {
-    dispatch(updatePasswordAsync(data.password));
-    alert('Cap nhat thanh cong');
-    setValue('password', '');
-    setValue('verifyPassword', '');
+  const onSubmit: SubmitHandler<IFormData> = async (data) => {
+    try {
+      const { password } = data;
+      const payload = { password };
+      const res = await axiosInstanceToken.patch(
+        `users/only/${currentUser.id}`,
+        payload,
+        {
+          params: {
+            token: token
+          }
+        }
+      );
+      if (res) {
+        alert('Cap nhat thanh cong');
+        setValue('password', '');
+        setValue('verifyPassword', '');
+      }
+    } catch (error) {
+      alert('Cap nhat that bai');
+      throw new Error();
+    }
   };
   return (
     <Wrapper>
