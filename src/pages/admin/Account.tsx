@@ -263,6 +263,8 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const Account = () => {
+  const [name, setName] = useState<string>('');
+  const [totalAccounts, setTotalAccounts] = useState<Partial<IUser>[]>([]);
   const [accounts, setAccounts] = useState<Partial<IUser>[]>([]);
   const [edit, setEdit] = useState<boolean>(false);
   const [rowSelected, setRowSelected] = useState<Partial<IUser>>();
@@ -335,6 +337,7 @@ const Account = () => {
       try {
         const res = await axiosInstanceToken.get<Partial<IUser>[]>('users');
         setAccounts(res.data);
+        setTotalAccounts(res.data);
       } catch (error) {
         throw new Error();
       }
@@ -413,7 +416,17 @@ const Account = () => {
   const handleClose = () => {
     setOpen(false);
   };
-  const onSubmitSearch = () => {};
+  const onSubmitSearch = () => {
+    const research = totalAccounts.filter((item) =>
+      item.name?.toLocaleLowerCase()?.includes(name.toLocaleLowerCase())
+    );
+    setAccounts(research);
+  };
+  useEffect(() => {
+    if (name === '') {
+      setAccounts(totalAccounts);
+    }
+  }, [name, totalAccounts]);
   const onUpdateUser: SubmitHandler<Partial<IFormEdit>> = async (data) => {
     try {
       const {
@@ -456,10 +469,9 @@ const Account = () => {
           <ComponentInput>
             <FormControl>
               <TextField
-                onChange={
-                  (e: any) => {}
-                  // setTitleDocument(e.target.value as string)
-                }
+                onChange={(e: any) => {
+                  setName(e.target.value as string);
+                }}
                 size="small"
                 placeholder="Tên"
               />
