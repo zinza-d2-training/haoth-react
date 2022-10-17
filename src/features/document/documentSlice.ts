@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import { IDocument } from '../../interfaces';
-import { fetchStoreDocument } from '../api/documentApi';
+import { IDocument } from '../../interfaces/interface';
+import { axiosInstanceToken } from '../../utils/request/httpRequest';
+
 
 interface IDocumentState {
   document: IDocument;
@@ -12,10 +13,9 @@ interface IDocumentState {
 const initialState: IDocumentState = {
   document: {
     id: 0,
-    title: '',
-    description: '',
-    download: 0,
-    link: '#'
+    name: '',
+    hashName: '',
+    link: ''
   },
   status: 'idle',
   loading: false
@@ -24,8 +24,15 @@ const initialState: IDocumentState = {
 export const fetchCreateDocument = createAsyncThunk(
   '/create-document',
   async (payload: Partial<IDocument>) => {
-    const res = await fetchStoreDocument(payload);
-    return res;
+    try {
+      const res = await axiosInstanceToken.post<IDocument>(
+        'documents',
+        payload
+      );
+      return res.data;
+    } catch (error) {
+      throw new Error();
+    }
   }
 );
 export const DocumentSlice = createSlice({

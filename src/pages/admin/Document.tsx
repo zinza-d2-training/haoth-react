@@ -24,12 +24,16 @@ import {
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { IDocument, ILocation } from '../../interfaces';
-import { listDocument } from '../../data/fake';
+import { IDocument } from '../../interfaces/interface';
 import { TransitionProps } from '@mui/material/transitions';
 import { NewDocument } from '../../components/Create';
 import { useAppSelector } from '../../app';
 import { selectDocument } from '../../features/document/documentSlice';
+import {
+  axioInstance,
+  axiosInstanceToken
+} from '../../utils/request/httpRequest';
+import { selectIsAdmin } from '../../features/auth/authSlice';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -140,7 +144,7 @@ const columns: GridColDef[] = [
     align: 'center'
   },
   {
-    field: 'title',
+    field: 'name',
     headerName: 'Tên tài liệu',
     minWidth: 400,
     headerAlign: 'center',
@@ -154,14 +158,6 @@ const columns: GridColDef[] = [
     align: 'center'
   },
   {
-    field: 'download',
-    headerName: 'Số lượt tải',
-    type: 'number',
-    minWidth: 350,
-    headerAlign: 'center',
-    align: 'center'
-  },
-  {
     field: 'link',
     headerName: 'Download',
     type: 'string',
@@ -170,7 +166,7 @@ const columns: GridColDef[] = [
     renderCell: (params: any) => {
       return (
         <Label>
-          <Link href={params.row.link}>
+          <Link target={'_blank'} href={params.row.link}>
             <Download />
           </Link>
         </Label>
@@ -197,19 +193,14 @@ function CustomPagination() {
 }
 interface IFormEdit {
   id: number;
-  title: string;
+  name: string;
   description: string;
   link: string;
-  download: number;
 }
 const schema = yup
   .object({
-    title: yup.string().required('Tên tài liệu không được để trống').trim(),
-    link: yup.string().required('Link tài liệu không được để trống').trim(),
-    download: yup
-      .string()
-      .required()
-      .matches(/^[0-9]+$/, 'Số lượt tải phải là dạng số ')
+    name: yup.string().required('Tên tài liệu không được để trống').trim(),
+    link: yup.string().required('Link tài liệu không được để trống').trim()
   })
   .required();
 const Transition = React.forwardRef(function Transition(
@@ -221,11 +212,13 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const Document = () => {
+  const isAdmin = useAppSelector(selectIsAdmin);
   const newDocument = useAppSelector(selectDocument);
   const [edit, setEdit] = useState<boolean>(false);
-  const [titleDocument, setTitleDocument] = useState<string>('');
-  const [rowSelected, setRowSelected] = useState<Partial<IDocument>>();
-  const [listData, setListData] = useState<IDocument[]>(listDocument);
+  const [documents, setDocuments] = useState<IDocument[]>([]);
+  const [totalDocs, setTotalDocs] = useState<IDocument[]>([]);
+  const [nameDocument, setNameDocument] = useState<string>('');
+  const [rowSelected, setRowSelected] = useState<IDocument>();
   const [open, setOpen] = React.useState<boolean>(false);
   const {
     register,
@@ -236,25 +229,37 @@ const Document = () => {
     resolver: yupResolver(schema),
     mode: 'onChange'
   });
+
   useEffect(() => {
-    if (newDocument) {
-      setListData((prev) => [newDocument, ...prev]);
+    const fetchData = async () => {
+      try {
+        const res = await axioInstance.get('documents');
+        setDocuments(res.data);
+        setTotalDocs(res.data);
+      } catch (error: any) {
+        alert(error.response.data.message);
+      }
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+    if (newDocument.id !== 0) {
+      setDocuments((prev) => [newDocument as IDocument, ...prev]);
     }
   }, [newDocument]);
   useEffect(() => {
     setValue('id', rowSelected?.id as number);
-    setValue('title', rowSelected?.title as string);
+    setValue('name', rowSelected?.name as string);
     setValue('description', rowSelected?.description as string);
     setValue('link', rowSelected?.link as string);
-    setValue('download', rowSelected?.download as number);
   }, [rowSelected, setValue]);
   useEffect(() => {
-    if (titleDocument === '') {
-      setListData(listDocument);
+    if (nameDocument === '') {
+      setDocuments(totalDocs);
     }
-  }, [titleDocument]);
+  }, [nameDocument, totalDocs]);
 
-  const handleClickOpen = (param: Partial<IDocument>) => {
+  const handleClickOpen = (param: IDocument) => {
     setRowSelected(param);
     setOpen(true);
   };
@@ -263,37 +268,47 @@ const Document = () => {
     setOpen(false);
   };
   const onSubmitSearch = () => {
-    const res = listDocument.filter((item) => {
-      return item.title
+    const res = totalDocs.filter((item) => {
+      return item.name
         .toLocaleLowerCase()
-        .includes(titleDocument.toLocaleLowerCase());
+        .includes(nameDocument.toLocaleLowerCase());
     });
-    setListData(res);
+    setDocuments(res);
   };
-  const onUpdateDocument: SubmitHandler<Partial<IDocument>> = (data) => {
-    const result = listData.map((item) => {
-      if (item.id === data.id) {
-        item = {
-          ...item,
-          ...data
-        };
+  const onUpdateDocument: SubmitHandler<Partial<IDocument>> = async (data) => {
+    try {
+      const { id, ...rest } = data;
+      const updated = await axiosInstanceToken.patch<IDocument>(
+        `documents/${id}`,
+        rest
+      );
+      if (updated) {
+        const result = totalDocs.map((item) => {
+          if (item.id === updated.data.id) {
+            item = {
+              ...item,
+              ...updated.data
+            };
+          }
+          return item;
+        });
+        setDocuments(result);
+        setTotalDocs(result);
+        setOpen(false);
       }
-      return item;
-    });
-    setListData(result);
-    setOpen(false);
+    } catch (error: any) {
+      alert(error.response.data.message);
+    }
   };
   return (
     <Wrapper>
-      <NewDocument />
+      {isAdmin && <NewDocument />}
       <Container>
         <Row>
           <ComponentInput>
             <FormControl>
               <TextField
-                onChange={(e: any) =>
-                  setTitleDocument(e.target.value as string)
-                }
+                onChange={(e: any) => setNameDocument(e.target.value as string)}
                 size="small"
                 placeholder="Tên tài liệu"
               />
@@ -310,11 +325,11 @@ const Document = () => {
           <DataGrid
             disableColumnMenu
             onRowClick={(param) =>
-              handleClickOpen(param.row as Partial<ILocation>)
+              isAdmin && handleClickOpen(param.row as IDocument)
             }
             autoPageSize
             autoHeight
-            rows={listData}
+            rows={documents}
             columns={columns}
             pageSize={10}
             rowsPerPageOptions={[10]}
@@ -361,10 +376,10 @@ const Document = () => {
                       <Typography>Tên tài liệu</Typography>
                       <FormControl fullWidth>
                         <TextField
-                          error={!!errors.title}
-                          helperText={errors.title?.message}
+                          error={!!errors.name}
+                          helperText={errors.name?.message}
                           inputProps={{ readOnly: !edit }}
-                          {...register('title')}
+                          {...register('name')}
                           size="small"
                         />
                       </FormControl>
@@ -375,18 +390,6 @@ const Document = () => {
                         <TextField
                           inputProps={{ readOnly: !edit }}
                           {...register('description')}
-                          size="small"
-                        />
-                      </FormControl>
-                    </Input>
-                    <Input>
-                      <Typography>Số lượt tải</Typography>
-                      <FormControl fullWidth>
-                        <TextField
-                          error={!!errors.download}
-                          helperText={errors.download?.message}
-                          inputProps={{ readOnly: !edit }}
-                          {...register('download')}
                           size="small"
                         />
                       </FormControl>

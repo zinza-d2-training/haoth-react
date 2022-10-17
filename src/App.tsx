@@ -22,6 +22,7 @@ import { Place } from './pages/admin';
 import { useLogin } from './hooks/useLogin';
 import RequireAuth from './layouts/RequireAuth';
 import RequireAdmin from './layouts/RequiredAdmin';
+import Document from './pages/document/Document';
 
 const Wrapper = styled.div`
   overflow-x: hidden;
@@ -60,7 +61,14 @@ function App() {
               </Layout>
             }
           />
-
+          <Route
+            path="/document"
+            element={
+              <Layout>
+                <Document />
+              </Layout>
+            }
+          />
           <Route element={<RequireAuth />}>
             <Route
               path="/registration-step-1"

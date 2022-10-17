@@ -63,6 +63,19 @@ const Place = () => {
             aria-label="basic tabs example">
             <Tab
               sx={{
+                '&.MuiTab-root': {
+                  textTransform: 'none',
+                  fontSize: '16px'
+                },
+                '&.Mui-selected': {
+                  color: 'rgba(0, 0, 0, 0.87)'
+                }
+              }}
+              label="Tài liệu"
+              {...a11yProps(0)}
+            />
+            <Tab
+              sx={{
                 height: '64px',
                 '&.MuiTab-root': {
                   textTransform: 'none',
@@ -73,19 +86,6 @@ const Place = () => {
                 }
               }}
               label="Điểm tiêm"
-              {...a11yProps(0)}
-            />
-            <Tab
-              sx={{
-                '&.MuiTab-root': {
-                  textTransform: 'none',
-                  fontSize: '16px'
-                },
-                '&.Mui-selected': {
-                  color: 'rgba(0, 0, 0, 0.87)'
-                }
-              }}
-              label="Đăng ký"
               {...a11yProps(1)}
             />
             <Tab
@@ -98,20 +98,20 @@ const Place = () => {
                   color: 'rgba(0, 0, 0, 0.87)'
                 }
               }}
-              label="Tài liệu"
+              label="Đăng ký"
               {...a11yProps(2)}
             />
           </Tabs>
         </Container>
       </Box>
       <TabPanel value={value} index={0}>
-        <Location />
+        <Document />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <Register />
+        <Location />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <Document />
+        <Register />
       </TabPanel>
     </Wrapper>
   );
