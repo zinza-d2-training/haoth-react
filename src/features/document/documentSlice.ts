@@ -3,7 +3,6 @@ import { RootState } from '../../app';
 import { IDocument } from '../../interfaces/interface';
 import { axiosInstanceToken } from '../../utils/request/httpRequest';
 
-
 interface IDocumentState {
   document: IDocument;
   status: 'idle' | 'pending' | 'succeeded' | 'failed';
