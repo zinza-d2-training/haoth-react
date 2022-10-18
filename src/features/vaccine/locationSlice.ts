@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import { ILocation } from '../../interfaces/interface';
+import { axioInstance } from '../../utils/request/httpRequest';
 
 interface ILocationState {
   location: Partial<ILocation>;
@@ -26,8 +26,13 @@ export const fetchCreateLocation = createAsyncThunk(
   '/create-location',
   async (payload: Partial<ILocation>): Promise<ILocation> => {
     try {
-      const axiosToken = useAxiosPrivate();
-      const res = await axiosToken.post<ILocation>('sites', payload);
+      const token = localStorage.getItem('token') || '';
+      const res = await axioInstance.post<ILocation>('sites', payload, {
+        headers: {
+          Authorization: `Bearer ${JSON.parse(token)}`
+        }
+      });
+      console.log(res.data);
       return res.data;
     } catch (error) {
       throw new Error();

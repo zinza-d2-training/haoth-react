@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import {
   IVaccineRegistration,
   IVaccineRegistrationResponse
 } from '../../interfaces/interface';
+import { axioInstance } from '../../utils/request/httpRequest';
 
 interface IVaccineRegistrationState {
   data: Partial<IVaccineRegistrationResponse>;
@@ -18,8 +18,16 @@ export const registrationAsync = createAsyncThunk(
     payload: IVaccineRegistration
   ): Promise<Partial<IVaccineRegistrationResponse>> => {
     try {
-      const axiosToken = useAxiosPrivate();
-      const response = await axiosToken.post('vaccine-registrations', payload);
+      const token = localStorage.getItem('token') || '';
+      const response = await axioInstance.post(
+        'vaccine-registrations',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`
+          }
+        }
+      );
       return response.data;
     } catch (error: any) {
       alert(error.response.data.message);
