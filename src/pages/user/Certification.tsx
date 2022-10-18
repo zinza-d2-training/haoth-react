@@ -12,8 +12,8 @@ import { useAppSelector } from '../../app';
 import { selectUser } from '../../features/auth/authSlice';
 import { useAccessToken } from '../../hooks/useAccessToken';
 import { IVaccineRegistrationResponse } from '../../interfaces/interface';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { STATUS } from '../../enum/status.enum';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -176,6 +176,7 @@ const columns: GridColDef[] = [
   }
 ];
 const Certification = () => {
+  const axiosToken = useAxiosPrivate();
   const currentUser = useAppSelector(selectUser);
   const token: string = useAccessToken();
   const [vaccineRegisters, setVaccineRegisters] = useState<
@@ -184,21 +185,22 @@ const Certification = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axiosInstanceToken.get<
-          IVaccineRegistrationResponse[]
-        >('vaccine-registrations/users', {
-          params: {
-            token: token,
-            status: STATUS.COMPLETED
+        const res = await axiosToken.get<IVaccineRegistrationResponse[]>(
+          'vaccine-registrations/users',
+          {
+            params: {
+              token: token,
+              status: STATUS.COMPLETED
+            }
           }
-        });
+        );
         setVaccineRegisters(res.data);
       } catch (error: any) {
         throw new Error(error.response.data.message);
       }
     };
     fetchData();
-  }, [token]);
+  }, [token, axiosToken]);
   return (
     <Wrapper>
       <Menu />

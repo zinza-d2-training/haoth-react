@@ -10,10 +10,10 @@ import { jsPDF } from 'jspdf';
 import { useAppSelector } from '../../app';
 import { selectUser } from '../../features/auth/authSlice';
 import { IVaccineRegistrationResponse } from '../../interfaces/interface';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { useAccessToken } from '../../hooks/useAccessToken';
 import { STATUS } from '../../enum/status.enum';
 import { GENDER } from '../../enum/gender.enum';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -97,6 +97,7 @@ const Continue = styled(Button)`
   }
 `;
 const RegistrationThree = () => {
+  const axiosToken = useAxiosPrivate();
   const currentUser = useAppSelector(selectUser);
   const token = useAccessToken();
   const [vaccineRegister, setVaccineRegister] =
@@ -104,7 +105,7 @@ const RegistrationThree = () => {
   useEffect(() => {
     const fetchNewRegister = async () => {
       try {
-        const res = await axiosInstanceToken.get<IVaccineRegistrationResponse>(
+        const res = await axiosToken.get<IVaccineRegistrationResponse>(
           `vaccine-registrations/users`,
           {
             params: {
@@ -121,7 +122,7 @@ const RegistrationThree = () => {
       }
     };
     fetchNewRegister();
-  }, [token]);
+  }, [token, axiosToken]);
 
   const exportPDF = () => {
     const PDF: HTMLElement | null = document.getElementById('export-pdf');

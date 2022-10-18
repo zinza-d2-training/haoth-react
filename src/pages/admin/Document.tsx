@@ -29,11 +29,9 @@ import { TransitionProps } from '@mui/material/transitions';
 import { NewDocument } from '../../components/Create';
 import { useAppSelector } from '../../app';
 import { selectDocument } from '../../features/document/documentSlice';
-import {
-  axioInstance,
-  axiosInstanceToken
-} from '../../utils/request/httpRequest';
+import { axioInstance } from '../../utils/request/httpRequest';
 import { selectIsAdmin } from '../../features/auth/authSlice';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -212,6 +210,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const Document = () => {
+  const axiosToken = useAxiosPrivate();
   const isAdmin = useAppSelector(selectIsAdmin);
   const newDocument = useAppSelector(selectDocument);
   const [edit, setEdit] = useState<boolean>(false);
@@ -278,7 +277,7 @@ const Document = () => {
   const onUpdateDocument: SubmitHandler<Partial<IDocument>> = async (data) => {
     try {
       const { id, ...rest } = data;
-      const updated = await axiosInstanceToken.patch<IDocument>(
+      const updated = await axiosToken.patch<IDocument>(
         `documents/${id}`,
         rest
       );

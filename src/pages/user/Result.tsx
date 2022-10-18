@@ -15,7 +15,8 @@ import { useAppSelector } from '../../app';
 import { selectUser } from '../../features/auth/authSlice';
 import { useAccessToken } from '../../hooks/useAccessToken';
 import { IVaccineRegistrationResponse } from '../../interfaces/interface';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import { STATUS } from '../../enum/status.enum';
 
 const Wrapper = styled.div`
   width: 100vw;
@@ -44,8 +45,9 @@ const Cell = styled(TableCell)`
   text-align: center;
 `;
 
-const STATUS: number = 1;
+// const STATUS: number = 1;
 const Result = () => {
+  const axiosToken = useAxiosPrivate();
   const currentUser = useAppSelector(selectUser);
   const token = useAccessToken();
   const [vaccineRegister, setVaccineRegister] =
@@ -53,8 +55,14 @@ const Result = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axiosInstanceToken.get<IVaccineRegistrationResponse>(
-          `vaccine-registrations/users?token=${token}&status=${STATUS}`
+        const res = await axiosToken.get<IVaccineRegistrationResponse>(
+          `vaccine-registrations/users`,
+          {
+            params: {
+              token: token,
+              status: STATUS.SUCCESS
+            }
+          }
         );
         setVaccineRegister(res.data);
       } catch (error: any) {
@@ -62,7 +70,7 @@ const Result = () => {
       }
     };
     fetchData();
-  }, [token]);
+  }, [token, axiosToken]);
   return (
     <Wrapper>
       <Menu />

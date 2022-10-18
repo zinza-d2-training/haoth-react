@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../../app';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import { IDocument } from '../../interfaces/interface';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
 
 interface IDocumentState {
   document: IDocument;
@@ -24,10 +24,8 @@ export const fetchCreateDocument = createAsyncThunk(
   '/create-document',
   async (payload: Partial<IDocument>) => {
     try {
-      const res = await axiosInstanceToken.post<IDocument>(
-        'documents',
-        payload
-      );
+      const axiosToken = useAxiosPrivate();
+      const res = await axiosToken.post<IDocument>('documents', payload);
       return res.data;
     } catch (error) {
       throw new Error();

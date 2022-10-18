@@ -15,8 +15,8 @@ import {
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import { useAppDispatch } from '../../app';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { fetchCreateDocument } from '../../features/document/documentSlice';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 const Wrapper = styled.div`
   width: 100%;
 `;
@@ -135,6 +135,7 @@ const schema = yup
   .required();
 
 const NewDocument = () => {
+  const axiosToken = useAxiosPrivate();
   const dispatch = useAppDispatch();
   const [file, setFile] = useState<File | null>();
   const [open, setOpen] = useState<boolean>(false);
@@ -160,23 +161,21 @@ const NewDocument = () => {
       const { file, description, name } = data;
       const formdata = new FormData();
       formdata.append('file', file as File);
-      await axiosInstanceToken
-        .post('documents/upload', formdata)
-        .then(async (res) => {
-          const upload: IDocumentUpload = {
-            ...res.data,
-            name,
-            description
-          };
-          if (upload) {
-            dispatch(fetchCreateDocument(upload));
-            setFile(null);
-            setValue('description', '');
-            setValue('name', '');
-            setValue('file', {});
-            setOpen(false);
-          }
-        });
+      await axiosToken.post('documents/upload', formdata).then(async (res) => {
+        const upload: IDocumentUpload = {
+          ...res.data,
+          name,
+          description
+        };
+        if (upload) {
+          dispatch(fetchCreateDocument(upload));
+          setFile(null);
+          setValue('description', '');
+          setValue('name', '');
+          setValue('file', {});
+          setOpen(false);
+        }
+      });
     } catch (error: any) {
       alert(error.response.data.message);
     }

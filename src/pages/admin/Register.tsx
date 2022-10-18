@@ -32,10 +32,11 @@ import {
   IVaccine,
   IVaccineRegistrationResponse
 } from '../../interfaces/interface';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import { axioInstance } from '../../utils/request/httpRequest';
 import { format } from '../../utils/formatTime';
 import { SHIFT } from '../../enum/shift.enum';
 import { STATUS as ESTATUS } from '../../enum/status.enum';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -279,6 +280,7 @@ const STATUS: IStatus[] = [
   }
 ];
 const Register = () => {
+  const axiosToken = useAxiosPrivate();
   const [edit, setEdit] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
   const [address, setAddress] = useState<string>('');
@@ -309,9 +311,9 @@ const Register = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axiosInstanceToken.get<
-          IVaccineRegistrationResponse[]
-        >('vaccine-registrations');
+        const res = await axiosToken.get<IVaccineRegistrationResponse[]>(
+          'vaccine-registrations'
+        );
         setVaccineRegisters(res.data);
         setTotalRegisters(res.data);
       } catch (error) {
@@ -320,7 +322,7 @@ const Register = () => {
     };
     const fetchSites = async () => {
       try {
-        const res = await axiosInstanceToken.get<ISite[]>('sites');
+        const res = await axiosToken.get<ISite[]>('sites');
         setSites(res.data);
       } catch (error) {
         throw new Error();
@@ -328,7 +330,7 @@ const Register = () => {
     };
     const fetchVaccines = async () => {
       try {
-        const res = await axiosInstanceToken.get<IVaccine[]>('vaccines');
+        const res = await axioInstance.get<IVaccine[]>('vaccines');
         setVaccines(res.data);
       } catch (error) {
         throw new Error();
@@ -337,7 +339,7 @@ const Register = () => {
     fetchData();
     fetchSites();
     fetchVaccines();
-  }, []);
+  }, [axiosToken]);
   const setData = useCallback(() => {
     if (rowSelected) {
       const data = rowSelected;
@@ -428,8 +430,8 @@ const Register = () => {
     const { siteId, vaccineId, status, time, address, id } = data;
     const update = { siteId, vaccineId, status, time, address };
     try {
-      const res = await axiosInstanceToken.patch<IVaccineRegistrationResponse>(
-        `http://localhost:5000/vaccine-registrations/${id}`,
+      const res = await axiosToken.patch<IVaccineRegistrationResponse>(
+        `vaccine-registrations/${id}`,
         update
       );
       const data = vaccineRegisters.filter((item) => item.id !== res.data.id);
@@ -625,7 +627,7 @@ const Register = () => {
                             {...params}
                             {...register('vaccine')}
                             size="small"
-                            placeholder="Địa điểm tiêm"
+                            placeholder="Vaccine"
                           />
                         )}
                       />
