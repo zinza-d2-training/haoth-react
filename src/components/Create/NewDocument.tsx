@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import { Close, NoteAdd } from '@mui/icons-material';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -14,8 +14,9 @@ import {
   TextField
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
-import { fetchCreateDocument } from '../../features/document/documentSlice';
 import { useAppDispatch } from '../../app';
+import { fetchCreateDocument } from '../../features/document/documentSlice';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 const Wrapper = styled.div`
   width: 100%;
 `;
@@ -105,17 +106,38 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 interface IFormData {
-  title: string;
+  name: string;
   description: string;
+  file: Partial<File>;
+}
+interface IDocumentUpload {
+  name: string;
+  description?: string;
+  hashName: string;
+  link: string;
 }
 const schema = yup
   .object({
-    title: yup.string().required('Tên tài liệu không được để trống').trim()
+    name: yup.string().required('Tên tài liệu không được để trống').trim(),
+    file: yup
+      .mixed()
+      .required('A file is required')
+      .test('fileFormat', 'Only file PDF, Docx', (value) => {
+        return (
+          value &&
+          [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          ].includes(value.type)
+        );
+      })
   })
   .required();
 
 const NewDocument = () => {
+  const axiosToken = useAxiosPrivate();
   const dispatch = useAppDispatch();
+  const [file, setFile] = useState<File | null>();
   const [open, setOpen] = useState<boolean>(false);
   const {
     register,
@@ -129,11 +151,34 @@ const NewDocument = () => {
   const handleClose = () => {
     setOpen(false);
   };
-  const onSubmit: SubmitHandler<IFormData> = (data) => {
-    dispatch(fetchCreateDocument(data));
-    setOpen(false);
-    setValue('title', '');
-    setValue('description', '');
+  useEffect(() => {
+    if (file) {
+      setValue('file', file);
+    }
+  }, [file, setValue]);
+  const onSubmit: SubmitHandler<IFormData> = async (data) => {
+    try {
+      const { file, description, name } = data;
+      const formdata = new FormData();
+      formdata.append('file', file as File);
+      await axiosToken.post('documents/upload', formdata).then(async (res) => {
+        const upload: IDocumentUpload = {
+          ...res.data,
+          name,
+          description
+        };
+        if (upload) {
+          dispatch(fetchCreateDocument(upload));
+          setFile(null);
+          setValue('description', '');
+          setValue('name', '');
+          setValue('file', {});
+          setOpen(false);
+        }
+      });
+    } catch (error: any) {
+      alert(error.response.data.message);
+    }
   };
   return (
     <Wrapper>
@@ -165,12 +210,29 @@ const NewDocument = () => {
                 <Divider />
                 <BodyForm>
                   <Input>
+                    <Typography>File (PDF, Docx)</Typography>
+                    <FormControl fullWidth>
+                      <TextField
+                        error={!!errors.file}
+                        helperText={errors.file?.message}
+                        onChange={(e: any) =>
+                          setFile(e.target.files[0] as File)
+                        }
+                        InputProps={{
+                          readOnly: true
+                        }}
+                        type={'file'}
+                        size="small"
+                      />
+                    </FormControl>
+                  </Input>
+                  <Input>
                     <Typography>Tên tài liệu</Typography>
                     <FormControl fullWidth>
                       <TextField
-                        {...register('title')}
-                        error={!!errors.title}
-                        helperText={errors.title?.message}
+                        {...register('name')}
+                        error={!!errors.name}
+                        helperText={errors.name?.message}
                         size="small"
                       />
                     </FormControl>
@@ -179,18 +241,6 @@ const NewDocument = () => {
                     <Typography>Mô tả</Typography>
                     <FormControl fullWidth>
                       <TextField {...register('description')} size="small" />
-                    </FormControl>
-                  </Input>
-                  <Input>
-                    <Typography>File(Not active)</Typography>
-                    <FormControl fullWidth>
-                      <TextField
-                        InputProps={{
-                          readOnly: true
-                        }}
-                        type={'file'}
-                        size="small"
-                      />
                     </FormControl>
                   </Input>
                 </BodyForm>

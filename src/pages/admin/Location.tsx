@@ -36,6 +36,7 @@ import * as areaService from '../../services/areaService';
 import * as siteService from '../../services/siteService';
 import { selectLocation } from '../../features/vaccine/locationSlice';
 import { useAppSelector } from '../../app';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -225,6 +226,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const Location = () => {
+  const axiosToken = useAxiosPrivate();
   const newLocation = useAppSelector(selectLocation);
   const [provinceSelect, setProvinceSelect] = useState<IProvince>();
   const [districtSelect, setDistrictSelect] = useState<IDistrict>();
@@ -372,26 +374,26 @@ const Location = () => {
     setSites(res);
   };
   const onUpdateLocation: SubmitHandler<Partial<IFormEdit>> = async (data) => {
-    const { ward, district, province, id, ...rest } = data;
-    if (id && rest) {
-      rest.table as number;
-      const updatedSite = await siteService.update(
-        id,
-        rest as Partial<ILocation>
-      );
-      const result = sites.map((item) => {
-        if (item.id === updatedSite.id) {
-          item = {
-            ...item,
-            ...updatedSite
-          };
-        }
-        return item;
-      });
-      setSites(result);
-      setEdit(false);
-      setOpen(false);
-    }
+    try {
+      const { ward, district, province, id, ...rest } = data;
+      if (id && rest) {
+        rest.table as number;
+        const res = await axiosToken.post<ILocation>(`sites/${id}`, rest);
+        const updatedSite = res.data;
+        const result = sites.map((item) => {
+          if (item.id === updatedSite.id) {
+            item = {
+              ...item,
+              ...updatedSite
+            };
+          }
+          return item;
+        });
+        setSites(result);
+        setEdit(false);
+        setOpen(false);
+      }
+    } catch (error) {}
   };
   return (
     <Wrapper>

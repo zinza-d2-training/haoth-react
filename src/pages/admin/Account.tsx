@@ -26,12 +26,12 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TransitionProps } from '@mui/material/transitions';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { IDistrict, IProvince, IUser, IWard } from '../../interfaces/interface';
 import * as areaService from '../../services/areaService';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { format } from '../../utils/formatTime';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   margin-top: 42px;
@@ -263,6 +263,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const Account = () => {
+  const axiosToken = useAxiosPrivate();
   const [name, setName] = useState<string>('');
   const [totalAccounts, setTotalAccounts] = useState<Partial<IUser>[]>([]);
   const [accounts, setAccounts] = useState<Partial<IUser>[]>([]);
@@ -335,7 +336,7 @@ const Account = () => {
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
-        const res = await axiosInstanceToken.get<Partial<IUser>[]>('users');
+        const res = await axiosToken.get<Partial<IUser>[]>('users');
         setAccounts(res.data);
         setTotalAccounts(res.data);
       } catch (error) {
@@ -348,7 +349,7 @@ const Account = () => {
     };
     fetchAccounts();
     fetchProvinces();
-  }, []);
+  }, [axiosToken]);
 
   useEffect(() => {
     if (provinceSelect) {
@@ -439,7 +440,7 @@ const Account = () => {
         genderName,
         ...rest
       } = data;
-      const updated = await axiosInstanceToken.patch<Partial<IUser>>(
+      const updated = await axiosToken.patch<Partial<IUser>>(
         `users/${id}`,
         rest
       );

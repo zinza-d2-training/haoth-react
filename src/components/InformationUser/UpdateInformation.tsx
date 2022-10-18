@@ -21,7 +21,7 @@ import { IUser } from '../../interfaces/interface';
 import * as areaService from '../../services/areaService';
 import { format } from '../../utils/formatTime';
 import { useAccessToken } from '../../hooks/useAccessToken';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -122,6 +122,7 @@ const genders: IGender[] = [
 const UpdateInformation: React.FC<EditProps> = (props) => {
   const token = useAccessToken();
   const dispatch = useAppDispatch();
+  const axiosToken = useAxiosPrivate();
   const currentUser: Partial<IUser> = useAppSelector(selectUser);
   const [provinceSelect, setProvinceSelect] = useState<IProvince>();
   const [districtSelect, setDistrictSelect] = useState<IDistrict>();
@@ -263,7 +264,7 @@ const UpdateInformation: React.FC<EditProps> = (props) => {
     try {
       const { id, name, identifyCard, gender, birthday, wardId } = data;
       const payload = { name, identifyCard, gender, wardId, birthday };
-      const updated = await axiosInstanceToken.patch<Partial<IUser>>(
+      const updated = await axiosToken.patch<Partial<IUser>>(
         `users/only/${id}`,
         payload,
         {

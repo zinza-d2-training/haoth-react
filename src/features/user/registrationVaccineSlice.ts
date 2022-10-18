@@ -4,7 +4,7 @@ import {
   IVaccineRegistration,
   IVaccineRegistrationResponse
 } from '../../interfaces/interface';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
+import { axioInstance } from '../../utils/request/httpRequest';
 
 interface IVaccineRegistrationState {
   data: Partial<IVaccineRegistrationResponse>;
@@ -18,9 +18,15 @@ export const registrationAsync = createAsyncThunk(
     payload: IVaccineRegistration
   ): Promise<Partial<IVaccineRegistrationResponse>> => {
     try {
-      const response = await axiosInstanceToken.post(
+      const token = localStorage.getItem('token') || '';
+      const response = await axioInstance.post(
         'vaccine-registrations',
-        payload
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`
+          }
+        }
       );
       return response.data;
     } catch (error: any) {

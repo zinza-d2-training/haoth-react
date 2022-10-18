@@ -6,8 +6,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAppSelector } from '../../app';
 import { selectUser } from '../../features/auth/authSlice';
-import { axiosInstanceToken } from '../../utils/request/httpRequest';
 import { useAccessToken } from '../../hooks/useAccessToken';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+
 const Wrapper = styled.div`
   width: 100%;
   display: flex;
@@ -74,6 +75,7 @@ interface IFormData {
 }
 const UpdatePassword = () => {
   const currentUser = useAppSelector(selectUser);
+  const axiosToken = useAxiosPrivate();
   const token = useAccessToken();
   const {
     register,
@@ -88,7 +90,7 @@ const UpdatePassword = () => {
     try {
       const { password } = data;
       const payload = { password };
-      const res = await axiosInstanceToken.patch(
+      const res = await axiosToken.patch(
         `users/only/${currentUser.id}`,
         payload,
         {

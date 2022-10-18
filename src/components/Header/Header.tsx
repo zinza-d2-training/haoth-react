@@ -5,7 +5,11 @@ import { Button, Typography } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import CustomizedMenus from './Dropdown';
 import { useAppDispatch, useAppSelector } from '../../app';
-import { logout, selectUser } from '../../features/auth/authSlice';
+import {
+  logout,
+  selectIsAdmin,
+  selectUser
+} from '../../features/auth/authSlice';
 import { useLogin } from '../../hooks/useLogin';
 import { Logout } from '@mui/icons-material';
 const Wrapper = styled.div`
@@ -104,6 +108,7 @@ const Header = () => {
   const navigate = useNavigate();
   const currentUser = useAppSelector(selectUser);
   const isLogin = useLogin();
+  const isAdmin = useAppSelector(selectIsAdmin);
   const handleLogout = () => {
     dispatch(logout());
     navigate('/');
@@ -137,7 +142,7 @@ const Header = () => {
             </Typography>
           </LinkHeader>
           <CustomizedMenus />
-          <LinkHeader to={'/admin/place'}>
+          <LinkHeader to={isAdmin ? '/admin/place' : '/document'}>
             <Typography variant="body1" sx={{ fontWeight: '500' }}>
               Tài liệu
             </Typography>
