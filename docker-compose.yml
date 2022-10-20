@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: covid19-app
+    networks:
+      - covid19-app-network
+    tty: true
+    stdin_open: true
+    build: ./docker
+    ports:
+      - ${REACT_APP_PORT}:${REACT_APP_PORT}
+    volumes:
+      - .:/app
+    environment:
+      - REACT_APP_API_HOST=${REACT_APP_API_HOST}
+
+networks:
+  covid19-app-network:
+    driver: bridge
